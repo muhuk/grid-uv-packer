@@ -1,0 +1,6 @@
+**/__pycache__
+*.blend?*
+*.kra~
+*.png~
+.mypy_cache/
+release/
