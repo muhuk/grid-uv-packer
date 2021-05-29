@@ -12,16 +12,19 @@ class IslandTest(unittest.TestCase):
     def test_island_creation_from_bmesh_faces(self):
         bpy.ops.mesh.primitive_plane_add()
         obj = bpy.context.selected_objects[0]
-
         bm = bmesh.new()
         bm.from_mesh(obj.data)
         island = data.Island.from_faces(bm, {0})
+        # Check that size is correct
+        self.assertAlmostEqual(island.size[0], 1.0)
+        self.assertAlmostEqual(island.size[1], 1.0)
+        # Check that UVs are set right.
         self.assertEqual(len(island.uvs), 4)
         self.assertEqual(island.uvs[0], Vector((0.0, 0.0)))
         self.assertEqual(island.uvs[1], Vector((1.0, 0.0)))
         self.assertEqual(island.uvs[2], Vector((1.0, 1.0)))
         self.assertEqual(island.uvs[3], Vector((0.0, 1.0)))
-        bm.to_mesh(obj.data)
+        # bm.to_mesh(obj.data)
         bm.free()
         del(bm)
         bpy.ops.object.delete()

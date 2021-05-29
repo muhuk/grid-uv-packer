@@ -7,6 +7,7 @@ from mathutils import Vector
 
 @dataclass(frozen=True)
 class Island:
+    size: tuple[float, float]
     uvs: dict[int, Vector]  # face loop id -> UV
 
     @classmethod
@@ -27,4 +28,5 @@ class Island:
             for face_loop in bm.faces[face_id].loops:
                 print(face_loop)
                 uvs[face_loop.index] = face_loop[uv_ident].uv
-        return cls(uvs=uvs)
+        size = (1.0, 1.0)
+        return cls(uvs=uvs, size=size)
