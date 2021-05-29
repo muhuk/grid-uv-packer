@@ -1,3 +1,4 @@
+import contextlib
 import unittest
 
 import bpy
@@ -9,9 +10,6 @@ from guvp import data
 
 class IslandTest(unittest.TestCase):
     def test_island_creation_from_bmesh_faces(self):
-        saved_selection = bpy.context.selected_objects
-        saved_active = bpy.context.active_object
-        bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.mesh.primitive_plane_add()
         obj = bpy.context.selected_objects[0]
 
@@ -26,16 +24,31 @@ class IslandTest(unittest.TestCase):
         bm.to_mesh(obj.data)
         bm.free()
         del(bm)
-
         bpy.ops.object.delete()
         del(obj)
+
+
+def run():
+    assert(bpy.context.mode == 'OBJECT')
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(IslandTest)
+    runner = unittest.TextTestRunner()
+    with saved_selection():
+        result = runner.run(suite)
+    return result
+
+
+@contextlib.contextmanager
+def saved_selection():
+    # Save selection
+    saved_selection = bpy.context.selected_objects
+    saved_active = bpy.context.active_object
+    bpy.ops.object.select_all(action='DESELECT')
+    # Run suite
+    try:
+        yield
+    finally:
+        # Restore selection
         for obj in saved_selection:
             obj.select_set(True)
         if saved_active is not None:
             bpy.context.view_layer.objects.active = saved_active
-
-
-def run():
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(IslandTest)
-    runner = unittest.TextTestRunner()
-    return runner.run(suite)
