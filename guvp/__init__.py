@@ -1,11 +1,22 @@
 from __future__ import annotations
-from dataclasses import dataclass
-import math
-from typing import Iterable, Type
 
-import bpy
-import bpy_extras
-import bmesh
+if "bpy" in locals():
+    import importlib
+    for mod in [data, tests]:  # noqa: F821
+        print("reloading {0}".format(mod))
+        importlib.reload(mod)
+else:
+    # stdlib
+    from dataclasses import dataclass
+    import math
+    from typing import Iterable, Type
+    # blender
+    import bpy
+    import bpy_extras
+    import bmesh
+    # addon
+    from guvp import (data, tests)
+
 
 bl_info = {
     "name": "Grid UV Packer",
@@ -68,6 +79,21 @@ class Island:
         return island
 
 
+class GridUVPackRunTestsOperator(bpy.types.Operator):
+    """Run Grid UV Pack tests"""
+    bl_idname = "uv.grid_pack_tests"
+    bl_label = "Grid UV Pack Tests"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        result = tests.run()
+        self.report({'INFO'}, str(result))
+        return {'FINISHED'}
+
+
 class GridUVPackOperator(bpy.types.Operator):
     """Grid UV Pack Operator"""
     bl_idname = "uv.grid_pack"
@@ -125,6 +151,7 @@ def menu_draw(self, _context):
 
 def register():
     bpy.utils.register_class(GridUVPackOperator)
+    bpy.utils.register_class(GridUVPackRunTestsOperator)
     bpy.types.VIEW3D_MT_uv_map.append(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.append(menu_draw)
 
@@ -133,6 +160,7 @@ def unregister():
     bpy.types.VIEW3D_MT_uv_map.remove(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.remove(menu_draw)
     bpy.utils.unregister_class(GridUVPackOperator)
+    bpy.utils.unregister_class(GridUVPackRunTestsOperator)
 
 
 if __name__ == "__main__":
