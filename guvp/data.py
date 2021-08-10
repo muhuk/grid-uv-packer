@@ -8,6 +8,7 @@ from mathutils import Vector
 
 @dataclass(frozen=True)
 class Island:
+    face_ids: set[int]
     size: tuple[float, float]
     uvs: dict[int, Vector]  # face loop id -> UV
 
@@ -39,4 +40,15 @@ class Island:
                 v_max = max(v, v_max)
                 del u, v
         size = (u_max - u_min, v_max - v_min)
-        return cls(uvs=uvs, size=size)
+        return cls(
+            face_ids=face_ids,
+            uvs=uvs,
+            size=size
+        )
+
+    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
+        uv_ident = bm.loops.layers.uv.verify()
+        for face_id in self.face_ids:
+            for face_loop in bm.faces[face_id].loops:
+                assert(face_loop.index in self.uvs)
+                face_loop[uv_ident].uv = self.uvs[face_loop.index]
