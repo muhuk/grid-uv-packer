@@ -40,6 +40,10 @@ class Island:
                 v_max = max(v, v_max)
                 del u, v
         size = (u_max - u_min, v_max - v_min)
+        # Offset everything by (-u_min, -v_min)
+        offset = Vector((u_min, v_min))
+        uvs = {k: uv - offset for k, uv in uvs.items()}
+        del offset
         return cls(
             face_ids=face_ids,
             uvs=uvs,
