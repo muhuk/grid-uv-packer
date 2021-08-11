@@ -32,6 +32,27 @@ class Island:
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
+        (uvs, size) = cls._calculate_uvs_and_size(bm, face_ids)
+        # TODO: Implement filling up grid mask here, while we're still holding
+        #       onto a reference to the BMesh.
+        return cls(
+            face_ids=face_ids,
+            uvs=uvs,
+            size=size
+        )
+
+    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
+        uv_ident = bm.loops.layers.uv.verify()
+        for face_id in self.face_ids:
+            for face_loop in bm.faces[face_id].loops:
+                assert(face_loop.index in self.uvs)
+                face_loop[uv_ident].uv = self.uvs[face_loop.index]
+
+    @staticmethod
+    def _calculate_uvs_and_size(
+            bm: bmesh.types.BMesh,
+            face_ids: set[int]
+    ) -> tuple[dict[int, Vector], tuple[float, float]]:
         uvs = {}
         uv_ident = bm.loops.layers.uv.verify()
         (u_min, v_min) = (math.inf, math.inf)
@@ -39,7 +60,6 @@ class Island:
         for face_id in face_ids:
             print(face_id)
             for face_loop in bm.faces[face_id].loops:
-                print(face_loop)
                 # Store UV
                 uvs[face_loop.index] = face_loop[uv_ident].uv
                 # Update UV bounds
@@ -53,16 +73,4 @@ class Island:
         # Offset everything by (-u_min, -v_min)
         offset = Vector((u_min, v_min))
         uvs = {k: uv - offset for k, uv in uvs.items()}
-        del offset
-        return cls(
-            face_ids=face_ids,
-            uvs=uvs,
-            size=size
-        )
-
-    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
-        uv_ident = bm.loops.layers.uv.verify()
-        for face_id in self.face_ids:
-            for face_loop in bm.faces[face_id].loops:
-                assert(face_loop.index in self.uvs)
-                face_loop[uv_ident].uv = self.uvs[face_loop.index]
+        return (uvs, size)
