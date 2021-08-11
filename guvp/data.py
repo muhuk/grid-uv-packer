@@ -6,6 +6,16 @@ from typing import Type
 import bmesh
 from mathutils import Vector
 
+
+class Grid:
+    def __init__(self, width: int, height: int):
+        self.width = width
+        self.height = height
+
+    def __repr__(self) -> str:
+        return "<Grid(width={0}, height={1})>".format(self.width, self.height)
+
+
 @dataclass(frozen=True)
 class Island:
     face_ids: set[int]
