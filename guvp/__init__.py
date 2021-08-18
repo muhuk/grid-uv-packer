@@ -11,9 +11,9 @@ else:
     import math
     from typing import Iterable, Type
     # blender
-    import bpy
-    import bpy_extras
-    import bmesh
+    import bpy         # type: ignore
+    import bpy_extras  # type: ignore
+    import bmesh       # type: ignore
     # addon
     from guvp import data
 
@@ -35,6 +35,14 @@ class GridUVPackOperator(bpy.types.Operator):
     """Grid UV Pack Operator"""
     bl_idname = "uv.grid_pack"
     bl_label = "Grid UV Pack"
+    bl_options = {'UNDO'}
+
+    grid_size: bpy.props.IntProperty(  # type: ignore
+        default=128,
+        min=8,
+        max=8196,
+        subtype='UNSIGNED'  # noqa: F821
+    )
 
     @classmethod
     def poll(cls, context):
@@ -60,6 +68,10 @@ class GridUVPackOperator(bpy.types.Operator):
 
         return {'FINISHED'}
 
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
     @staticmethod
     def _island_face_ids(
         context: bpy.types.Context,
@@ -83,6 +95,7 @@ class GridUVPackOperator(bpy.types.Operator):
 
 def menu_draw(self, _context):
     self.layout.separator()
+    self.layout.operator_context = 'INVOKE_DEFAULT'
     self.layout.operator("uv.grid_pack")
 
 
