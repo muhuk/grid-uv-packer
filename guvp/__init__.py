@@ -38,11 +38,11 @@ class GridUVPackOperator(bpy.types.Operator):
     bl_options = {'UNDO'}
 
     grid_size: bpy.props.EnumProperty(  # type: ignore
-        name="Grid Size",                # noqa: F722
+        name="Grid Size",               # noqa: F722
         default="128",
         items=(
             ("128", "128", "", 'NONE', 128),  # noqa: F722,F821
-            ("256", "256", "", 'NONE', 256)   # noqa: F722,F821
+            ("256", "256", "", 'NONE', 256),  # noqa: F722,F821
             ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
         )
     )
@@ -55,13 +55,16 @@ class GridUVPackOperator(bpy.types.Operator):
 
     def execute(self, context):
         assert(context.mode == 'EDIT_MESH')
+        # Size of one grid cell (square) in UV coordinate system.
+        cell_size: float = 1.0 / float(self.grid_size)
         mesh = context.active_object.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        # This is needed to be able to use face ids.
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
         for face_ids in self._island_face_ids(context, mesh):
-            island = data.Island.from_faces(bm, face_ids)
+            island = data.Island.from_faces(bm, face_ids, cell_size)
             island.write_uvs(bm)
         # We cannot write UVs in edit mode.
         bpy.ops.object.editmode_toggle()
