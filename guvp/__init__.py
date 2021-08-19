@@ -37,11 +37,14 @@ class GridUVPackOperator(bpy.types.Operator):
     bl_label = "Grid UV Pack"
     bl_options = {'UNDO'}
 
-    grid_size: bpy.props.IntProperty(  # type: ignore
-        default=128,
-        min=8,
-        max=8196,
-        subtype='UNSIGNED'  # noqa: F821
+    grid_size: bpy.props.EnumProperty(  # type: ignore
+        name="Grid Size",                # noqa: F722
+        default="128",
+        items=(
+            ("128", "128", "", 'NONE', 128),  # noqa: F722,F821
+            ("256", "256", "", 'NONE', 256)   # noqa: F722,F821
+            ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
+        )
     )
 
     @classmethod
