@@ -79,7 +79,10 @@ class Island:
             # TODO: add margin parameters
     ) -> Island:
         (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids)
-        mask = cls._calculate_mask_grid(uvs, size, cell_size)
+        mask = Grid(
+            width=math.ceil(size.x / cell_size),
+            height=math.ceil(size.y / cell_size)
+        )
         cls._fill_mask(bm, face_ids, offset, cell_size, mask)
         print(mask)
         mask.draw_str()
@@ -96,16 +99,6 @@ class Island:
             for face_loop in bm.faces[face_id].loops:
                 assert(face_loop.index in self.uvs[face_id])
                 face_loop[uv_ident].uv = self.uvs[face_id][face_loop.index]
-
-    @staticmethod
-    def _calculate_mask_grid(
-            uvs: IslandUVs,
-            size: Vector,
-            cell_size: float
-    ) -> Grid:
-        width = math.ceil(size.x / cell_size)
-        height = math.ceil(size.y / cell_size)
-        return Grid(width, height)
 
     @staticmethod
     def _calculate_uvs_and_size(
