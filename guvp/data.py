@@ -63,6 +63,16 @@ class Grid:
             print("Grid is too large, cannot draw to console.")
 
 
+class GridPacker:
+    def __init__(self, bm: bmesh.types.BMesh, islands: List[Island]):
+        self.bm = bm
+        self.islands = islands
+
+    def run(self):
+        for island in self.islands:
+            island.write_uvs(self.bm)
+
+
 @dataclass(frozen=True)
 class Island:
     face_ids: set[int]

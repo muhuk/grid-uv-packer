@@ -66,9 +66,12 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
-        for face_ids in self._island_face_ids(context, mesh):
-            island = data.Island.from_faces(bm, face_ids, cell_size)
-            island.write_uvs(bm)
+        packer = data.GridPacker(
+            bm,
+            [data.Island.from_faces(bm, face_ids, cell_size)
+             for face_ids in self._island_face_ids(context, mesh)]
+        )
+        packer.run()
         # We cannot write UVs in edit mode.
         bpy.ops.object.editmode_toggle()
         bm.to_mesh(mesh)
