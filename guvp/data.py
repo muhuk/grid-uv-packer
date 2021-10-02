@@ -8,7 +8,7 @@ import bmesh                  # type: ignore
 from mathutils import Vector  # type: ignore
 import mathutils.geometry     # type: ignore
 
-import numpy as np
+import numpy as np            # type: ignore
 
 
 FaceUVs = Dict[int, Vector]
@@ -25,10 +25,10 @@ class Grid:
         self.size = Size(width=width, height=height)
         self.cells = np.zeros((height, width), dtype=np.bool_)
 
-    def __delitem__(self, key: (int, int)):
+    def __delitem__(self, key: Tuple[int, int]):
         raise TypeError("'Grid' object does not support item deletion.")
 
-    def __getitem__(self, key: (int, int)) -> bool:
+    def __getitem__(self, key: Tuple[int, int]) -> bool:
         (column, row) = key
         return self.cells[(row, column)]
 
@@ -46,7 +46,7 @@ class Grid:
             self.size.height
         )
 
-    def __setitem__(self, key: (int, int), value: bool) -> None:
+    def __setitem__(self, key: Tuple[int, int], value: bool) -> None:
         (column, row) = key
         self.cells[(row, column)] = value
 
@@ -67,10 +67,16 @@ class GridPacker:
     def __init__(self, islands: List[Island]):
         self.islands = islands
 
-    def run(self):
+    @property
+    def fitness(self) -> float:
+        # TODO: Calculate actual fitness.
+        #       Return value between 0.0 - 1.0
+        return 0.0
+
+    def run(self) -> None:
         pass
 
-    def write(self, bm: bmesh.types.BMesh):
+    def write(self, bm: bmesh.types.BMesh) -> None:
         for island in self.islands:
             island.write_uvs(bm)
 

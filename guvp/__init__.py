@@ -71,6 +71,7 @@ class GridUVPackOperator(bpy.types.Operator):
              for face_ids in self._island_face_ids(context, mesh)]
         )
         packer.run()
+        print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
         packer.write(bm)
         # We cannot write UVs in edit mode.
         bpy.ops.object.editmode_toggle()
