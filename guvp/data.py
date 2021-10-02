@@ -64,13 +64,15 @@ class Grid:
 
 
 class GridPacker:
-    def __init__(self, bm: bmesh.types.BMesh, islands: List[Island]):
-        self.bm = bm
+    def __init__(self, islands: List[Island]):
         self.islands = islands
 
     def run(self):
+        pass
+
+    def write(self, bm: bmesh.types.BMesh):
         for island in self.islands:
-            island.write_uvs(self.bm)
+            island.write_uvs(bm)
 
 
 @dataclass(frozen=True)
