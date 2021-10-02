@@ -67,8 +67,11 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
         packer = data.GridPacker(
-            [data.Island.from_faces(bm, face_ids, cell_size)
-             for face_ids in self._island_face_ids(context, mesh)]
+            initial_size=self.grid_size,
+            islands=[
+                data.Island.from_faces(bm, face_ids, cell_size)
+                for face_ids in self._island_face_ids(context, mesh)
+            ]
         )
         packer.run()
         print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))

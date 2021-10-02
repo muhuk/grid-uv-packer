@@ -64,7 +64,8 @@ class Grid:
 
 
 class GridPacker:
-    def __init__(self, islands: List[Island]):
+    def __init__(self, initial_size: int, islands: List[Island]):
+        self.mask = Grid(width=initial_size, height=initial_size)
         self.islands = islands
 
     @property
@@ -74,6 +75,11 @@ class GridPacker:
         return 0.0
 
     def run(self) -> None:
+        filled_x: int = 0
+        for island in self.islands:
+            # TODO:
+            #   associate offsets with islands
+            filled_x += island.mask.size.width
         pass
 
     def write(self, bm: bmesh.types.BMesh) -> None:
