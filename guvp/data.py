@@ -27,6 +27,10 @@ class CellCoord(NamedTuple):
     x: int
     y: int
 
+    @classmethod
+    def zero(cls):
+        return cls(0, 0)
+
 
 class Grid:
     def __init__(self, width: int, height: int):
@@ -72,9 +76,12 @@ class Grid:
 
 
 class GridPacker:
-    def __init__(self, initial_size: int, islands: List[Island]):
+    def __init__(self, initial_size: int, islands: List[Island]) -> None:
         self.mask = Grid(width=initial_size, height=initial_size)
-        self.islands = islands
+        self.islands: List[IslandPlacement] = [
+            IslandPlacement(offset=CellCoord.zero(), island=island)
+            for island in islands
+        ]
 
     @property
     def fitness(self) -> float:
@@ -84,15 +91,15 @@ class GridPacker:
 
     def run(self) -> None:
         filled_x: int = 0
-        for island in self.islands:
+        for ip in self.islands:
             # TODO:
             #   associate offsets with islands
-            filled_x += island.mask.size.width
+            filled_x += ip.island.mask.size.width
         pass
 
     def write(self, bm: bmesh.types.BMesh) -> None:
-        for island in self.islands:
-            island.write_uvs(bm)
+        for ip in self.islands:
+            ip.island.write_uvs(bm)
 
 
 @dataclass(frozen=True)
@@ -202,6 +209,15 @@ class Island:
                             mask[open_cell_id] = True
                             break
                 open_cells -= hit_cells
+
+
+@dataclass
+class IslandPlacement:
+    offset: CellCoord
+    # rotation: Enum
+    #
+    #   see: https://docs.python.org/3/library/enum.html
+    island: Island
 
 
 class Size(NamedTuple):
