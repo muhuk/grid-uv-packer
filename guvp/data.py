@@ -175,9 +175,13 @@ class Island:
             ):
                 hit_cells: Set[Tuple[int, int]] = set()
                 for open_cell_id in open_cells:
+                    # We need to invert y-axis because UVs
+                    # use vertically increasing y-axis.
+                    cell_x: int = open_cell_id[0]
+                    cell_y: int = mask.size.height - open_cell_id[1]
                     # triangulate the cell's quad.
-                    x = float(offset.x + open_cell_id[0] * cell_size)
-                    y = float(offset.y + open_cell_id[1] * cell_size)
+                    x = float(offset.x + cell_x * cell_size)
+                    y = float(offset.y + cell_y * cell_size)
                     grid_tris = Triangle2D.triangulate([
                         Vector((x, y)),
                         Vector((x, y + cell_size)),
