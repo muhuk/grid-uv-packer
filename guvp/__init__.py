@@ -9,7 +9,7 @@ else:
     # stdlib
     from dataclasses import dataclass
     import math
-    from typing import Iterable, Type
+    from typing import Iterable, Set, Type
     # blender
     import bpy         # type: ignore
     import bpy_extras  # type: ignore
@@ -56,10 +56,13 @@ class GridUVPackOperator(bpy.types.Operator):
             context.active_object.type == 'MESH' and \
             context.mode == 'EDIT_MESH'
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         assert(context.mode == 'EDIT_MESH')
+        # We ignore the type of self.grid_size for bpy reasons.
+        # So let's cast it explicitly here.
+        grid_size: int = int(self.grid_size)
         # Size of one grid cell (square) in UV coordinate system.
-        cell_size: float = 1.0 / float(self.grid_size)
+        cell_size: float = 1.0 / grid_size
         mesh = context.active_object.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
@@ -67,7 +70,7 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
         packer = data.GridPacker(
-            initial_size=self.grid_size,
+            initial_size=grid_size,
             islands=[
                 data.Island.from_faces(bm, face_ids, cell_size)
                 for face_ids in self._island_face_ids(context, mesh)
