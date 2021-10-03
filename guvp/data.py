@@ -1,8 +1,14 @@
 from __future__ import annotations
-from collections import namedtuple
 from dataclasses import dataclass
 import math
-from typing import Dict, List, Set, Tuple, Type
+from typing import (
+    Dict,
+    Iterator,
+    List,
+    NamedTuple,
+    Set,
+    Type
+)
 
 import bmesh                  # type: ignore
 from mathutils import Vector  # type: ignore
@@ -17,7 +23,9 @@ FaceUVs = Dict[int, Vector]
 IslandUVs = Dict[int, FaceUVs]
 
 
-Size = namedtuple('Size', ['width', 'height'])
+class CellCoord(NamedTuple):
+    x: int
+    y: int
 
 
 class Grid:
@@ -25,15 +33,15 @@ class Grid:
         self.size = Size(width=width, height=height)
         self.cells = np.zeros((height, width), dtype=np.bool_)
 
-    def __delitem__(self, key: Tuple[int, int]):
+    def __delitem__(self, key: CellCoord):
         raise TypeError("'Grid' object does not support item deletion.")
 
-    def __getitem__(self, key: Tuple[int, int]) -> bool:
+    def __getitem__(self, key: CellCoord) -> bool:
         (column, row) = key
         return self.cells[(row, column)]
 
-    def __iter__(self):
-        return iter([(x, y)
+    def __iter__(self) -> Iterator[CellCoord]:
+        return iter([CellCoord(x, y)
                      for x in range(self.size.width)
                      for y in range(self.size.height)])
 
@@ -46,7 +54,7 @@ class Grid:
             self.size.height
         )
 
-    def __setitem__(self, key: Tuple[int, int], value: bool) -> None:
+    def __setitem__(self, key: CellCoord, value: bool) -> None:
         (column, row) = key
         self.cells[(row, column)] = value
 
@@ -57,7 +65,7 @@ class Grid:
             for row in range(self.size.height):
                 print('<' if row == 0 else ' ', end='')
                 for column in range(self.size.width):
-                    print('#' if self[(column, row)] else '.', end='')
+                    print('#' if self[CellCoord(column, row)] else '.', end='')
                 print('>' if row == self.size.height - 1 else '')
         else:
             print("Grid is too large, cannot draw to console.")
@@ -161,7 +169,7 @@ class Island:
             cell_size: float,
             mask: Grid
     ):
-        open_cells: Set[Tuple[int, int]] = set(mask)
+        open_cells: Set[CellCoord] = set(mask)
         uv_ident = bm.loops.layers.uv.verify()
 
         for face_id in face_ids:
@@ -173,7 +181,7 @@ class Island:
             for face_tri in Triangle2D.triangulate(
                 [(u, v) for (u, v) in loop_uvs]
             ):
-                hit_cells: Set[Tuple[int, int]] = set()
+                hit_cells: Set[CellCoord] = set()
                 for open_cell_id in open_cells:
                     # We need to invert y-axis because UVs
                     # use vertically increasing y-axis.
@@ -194,6 +202,11 @@ class Island:
                             mask[open_cell_id] = True
                             break
                 open_cells -= hit_cells
+
+
+class Size(NamedTuple):
+    width: int
+    height: int
 
 
 class Triangle2D:
