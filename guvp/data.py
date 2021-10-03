@@ -92,14 +92,13 @@ class GridPacker:
     def run(self) -> None:
         filled_x: int = 0
         for ip in self.islands:
-            # TODO:
-            #   associate offsets with islands
+            ip.offset = CellCoord(filled_x, 0)
             filled_x += ip.island.mask.size.width
         pass
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         for ip in self.islands:
-            ip.island.write_uvs(bm)
+            ip.write_uvs(bm)
 
 
 @dataclass(frozen=True)
@@ -132,12 +131,14 @@ class Island:
             mask=mask
         )
 
-    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
+    def write_uvs(self, bm: bmesh.types.BMesh, offset: CellCoord) -> None:
         uv_ident = bm.loops.layers.uv.verify()
+        offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
                 assert(face_loop.index in self.uvs[face_id])
                 face_loop[uv_ident].uv = self.uvs[face_id][face_loop.index]
+                face_loop[uv_ident].uv += offset_vec
 
     @staticmethod
     def _calculate_uvs_and_size(
@@ -218,6 +219,9 @@ class IslandPlacement:
     #
     #   see: https://docs.python.org/3/library/enum.html
     island: Island
+
+    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
+        self.island.write_uvs(bm, self.offset)
 
 
 class Size(NamedTuple):
