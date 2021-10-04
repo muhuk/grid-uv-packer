@@ -77,6 +77,7 @@ class Grid:
 
 class GridPacker:
     def __init__(self, initial_size: int, islands: List[Island]) -> None:
+        self.utilized_area = Size.zero()
         self.mask = Grid(width=initial_size, height=initial_size)
         self.islands: List[IslandPlacement] = [
             IslandPlacement(offset=CellCoord.zero(), island=island)
@@ -94,7 +95,12 @@ class GridPacker:
         for ip in self.islands:
             ip.offset = CellCoord(filled_x, 0)
             filled_x += ip.island.mask.size.width
-        pass
+            (uw, uh) = self.utilized_area
+            self.utilized_area = Size(
+                width=filled_x,
+                height=max(ip.island.mask.size.height, uh)
+            )
+        print("Utilized area: {0}".format(self.utilized_area))
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         for ip in self.islands:
@@ -227,6 +233,16 @@ class IslandPlacement:
 class Size(NamedTuple):
     width: int
     height: int
+
+    def __repr__(self) -> str:
+        return "<Size(width={0}, height={1})>".format(self.width, self.height)
+
+    def __str__(self) -> str:
+        return "{0}x{1}".format(self.width, self.height)
+
+    @classmethod
+    def zero(cls):
+        return cls(0, 0)
 
 
 class Triangle2D:
