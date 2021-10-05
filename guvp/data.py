@@ -1,7 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import enum
 import math
 from typing import (
+    Any,
     Dict,
     Iterator,
     List,
@@ -16,6 +18,8 @@ import mathutils.geometry     # type: ignore
 
 import numpy as np            # type: ignore
 
+
+CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 FaceUVs = Dict[int, Vector]
 
@@ -33,9 +37,18 @@ class CellCoord(NamedTuple):
 
 
 class Grid:
-    def __init__(self, width: int, height: int):
-        self.size = Size(width=width, height=height)
-        self.cells = np.zeros((height, width), dtype=np.bool_)
+    def __init__(self, cells: np.ndarray):
+        assert(cells.ndim == 2)
+        (height, width) = cells.shape
+        self.cells = cells
+        self.size = Size(width, height)
+
+    def __and__(self, other: Any) -> bool:
+        if not isinstance(other, Grid):
+            return NotImplemented
+        if self.size != other.size:
+            raise ValueError("Grids are not same sized.")
+        return self.cells & other.cells
 
     def __delitem__(self, key: CellCoord):
         raise TypeError("'Grid' object does not support item deletion.")
@@ -74,11 +87,15 @@ class Grid:
         else:
             print("Grid is too large, cannot draw to console.")
 
+    @classmethod
+    def empty(cls, width: int, height: int):
+        return cls(np.zeros((height, width), dtype=np.bool_))
+
 
 class GridPacker:
     def __init__(self, initial_size: int, islands: List[Island]) -> None:
         self._utilized_area = Size.zero()
-        self._mask = Grid(width=initial_size, height=initial_size)
+        self._mask = Grid.empty(width=initial_size, height=initial_size)
         self._islands: List[IslandPlacement] = [
             IslandPlacement(offset=CellCoord.zero(), island=island)
             for island in islands
@@ -93,6 +110,15 @@ class GridPacker:
     def run(self) -> None:
         filled_x: int = 0
         for ip in self._islands:
+            # using current offset try collision: `mask & island`
+            # if collision:
+            #    increment offset
+            # else:
+            #    give new offset to island
+            #    update the mask (stamp island)
+            #    update utilized area
+            pass
+        for ip in self._islands:
             ip.offset = CellCoord(filled_x, 0)
             filled_x += ip.island.mask.size.width
             (uw, uh) = self._utilized_area
@@ -105,6 +131,13 @@ class GridPacker:
     def write(self, bm: bmesh.types.BMesh) -> None:
         for ip in self._islands:
             ip.write_uvs(bm)
+
+    def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
+        if ip.offset.x + ip.island.mask.size.width > self._mask.size.width:
+            return CollisionResult.OUT_OF_BOUNDS
+        if ip.offset.y + ip.island.mask.size.height > self._mask.size.height:
+            return CollisionResult.OUT_OF_BOUNDS
+        raise NotImplementedError()
 
 
 @dataclass(frozen=True)
@@ -123,7 +156,7 @@ class Island:
             # TODO: add margin parameters
     ) -> Island:
         (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids)
-        mask = Grid(
+        mask = Grid.empty(
             width=math.ceil(size.x / cell_size),
             height=math.ceil(size.y / cell_size)
         )
