@@ -77,9 +77,9 @@ class Grid:
 
 class GridPacker:
     def __init__(self, initial_size: int, islands: List[Island]) -> None:
-        self.utilized_area = Size.zero()
-        self.mask = Grid(width=initial_size, height=initial_size)
-        self.islands: List[IslandPlacement] = [
+        self._utilized_area = Size.zero()
+        self._mask = Grid(width=initial_size, height=initial_size)
+        self._islands: List[IslandPlacement] = [
             IslandPlacement(offset=CellCoord.zero(), island=island)
             for island in islands
         ]
@@ -92,10 +92,10 @@ class GridPacker:
 
     def run(self) -> None:
         filled_x: int = 0
-        for ip in self.islands:
+        for ip in self._islands:
             ip.offset = CellCoord(filled_x, 0)
             filled_x += ip.island.mask.size.width
-            (uw, uh) = self.utilized_area
+            (uw, uh) = self._utilized_area
             self.utilized_area = Size(
                 width=filled_x,
                 height=max(ip.island.mask.size.height, uh)
@@ -103,7 +103,7 @@ class GridPacker:
         print("Utilized area: {0}".format(self.utilized_area))
 
     def write(self, bm: bmesh.types.BMesh) -> None:
-        for ip in self.islands:
+        for ip in self._islands:
             ip.write_uvs(bm)
 
 
