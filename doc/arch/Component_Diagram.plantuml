@@ -6,26 +6,26 @@ Boundary(moduleInit, "__init__") {
   Component(gridUvPackOperator, "GridUVPackOperator", "Operator")
 }
 
-Boundary(moduleData, "data") {
-  Component(collisionResult, "CollisionResult", "Enum", "NO | YES | OUT_OF_BOUNDS")
+Boundary(moduleContinuous, "continuous") {
   Component(faceUvs, "FaceUVs", "Dict[int, Vector]")
   Component(islandUvs, "IslandUVs", "Dickt[int, FaceUVs]")
-  Component(gridPacker, "GridPacker", "Class")
   Component(island, "Island", "Data Class")
-  Component(islandPlacement, "IslandPlacement", "Data Class")
   Component(triangle2d, "Triangle2D", "Class")
-
-  Rel(islandUvs, faceUvs, " ")
-
-  Rel(gridPacker, collisionResult, " ")
-  Rel(gridPacker, island, " ")
-  Rel(gridPacker, islandPlacement, " ")
 
   Rel(island, faceUvs, " ")
   Rel(island, islandUvs, " ")
   Rel(island, triangle2d, " ")
 
-  Rel(islandPlacement, island, " ")
+  Rel(islandUvs, faceUvs, " ")
+}
+
+Boundary(moduleData, "data") {
+  Component(collisionResult, "CollisionResult", "Enum", "NO | YES | OUT_OF_BOUNDS")
+  Component(gridPacker, "GridPacker", "Class")
+  Component(islandPlacement, "IslandPlacement", "Data Class")
+
+  Rel(gridPacker, collisionResult, " ")
+  Rel(gridPacker, islandPlacement, " ")
 }
 
 Boundary(moduleDiscrete, "discrete") {
@@ -42,11 +42,13 @@ Rel(gridUvPackOperator, island, " ")
 
 Rel(gridPacker, cellCoord, " ")
 Rel(gridPacker, grid, " ")
+Rel(gridPacker, island, " ")
 Rel(gridPacker, size, " ")
 
 Rel(island, cellCoord, " ")
 Rel(island, grid, " ")
 Rel(island, size, " ")
 
+Rel(islandPlacement, island, " ")
 Rel(islandPlacement, cellCoord, " ")
 @enduml

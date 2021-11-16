@@ -2,20 +2,18 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [data, discrete]:  # noqa: F821
+    for mod in [continuous, data, discrete]:  # noqa: F821
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
     # stdlib
-    from dataclasses import dataclass
-    import math
-    from typing import Iterable, Set, Type
+    from typing import (Iterable, Set)
     # blender
     import bpy         # type: ignore
     import bpy_extras  # type: ignore
     import bmesh       # type: ignore
     # addon
-    from guvp import (data, discrete)
+    from guvp import (continuous, data, discrete)  # noqa: F401
 
 
 bl_info = {
@@ -72,7 +70,7 @@ class GridUVPackOperator(bpy.types.Operator):
         packer = data.GridPacker(
             initial_size=grid_size,
             islands=[
-                data.Island.from_faces(bm, face_ids, cell_size)
+                continuous.Island.from_faces(bm, face_ids, cell_size)
                 for face_ids in self._island_face_ids(context, mesh)
             ]
         )
