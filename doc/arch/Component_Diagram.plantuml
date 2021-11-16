@@ -1,6 +1,6 @@
 @startuml Component_Diagram
 !include ../c4/C4_Component.puml
-LAYOUT_LEFT_RIGHT
+LAYOUT_LEFT_RIGHT()
 
 Boundary(moduleInit, "__init__") {
 Component(gridUvPackOperator, "GridUVPackOperator", "Operator")
