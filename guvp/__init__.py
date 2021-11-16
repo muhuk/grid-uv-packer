@@ -2,7 +2,7 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [data]:  # noqa: F821
+    for mod in [data, discrete]:  # noqa: F821
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
@@ -15,7 +15,7 @@ else:
     import bpy_extras  # type: ignore
     import bmesh       # type: ignore
     # addon
-    from guvp import data
+    from guvp import (data, discrete)
 
 
 bl_info = {

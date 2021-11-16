@@ -16,7 +16,7 @@ import bmesh                  # type: ignore
 from mathutils import Vector  # type: ignore
 import mathutils.geometry     # type: ignore
 
-import numpy as np            # type: ignore
+from guvp import discrete
 
 
 CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
@@ -27,77 +27,12 @@ FaceUVs = Dict[int, Vector]
 IslandUVs = Dict[int, FaceUVs]
 
 
-class CellCoord(NamedTuple):
-    x: int
-    y: int
-
-    @classmethod
-    def zero(cls):
-        return cls(0, 0)
-
-
-class Grid:
-    def __init__(self, cells: np.ndarray):
-        assert(cells.ndim == 2)
-        (height, width) = cells.shape
-        self.cells = cells
-        self.size = Size(width, height)
-
-    def __and__(self, other: Any) -> bool:
-        if not isinstance(other, Grid):
-            return NotImplemented
-        if self.size != other.size:
-            raise ValueError("Grids are not same sized.")
-        return self.cells & other.cells
-
-    def __delitem__(self, key: CellCoord):
-        raise TypeError("'Grid' object does not support item deletion.")
-
-    def __getitem__(self, key: CellCoord) -> bool:
-        (column, row) = key
-        return self.cells[(row, column)]
-
-    def __iter__(self) -> Iterator[CellCoord]:
-        return iter([CellCoord(x, y)
-                     for x in range(self.size.width)
-                     for y in range(self.size.height)])
-
-    def __len__(self) -> int:
-        return self.size.width * self.size.height
-
-    def __repr__(self) -> str:
-        return "<Grid(width={0}, height={1})>".format(
-            self.size.width,
-            self.size.height
-        )
-
-    def __setitem__(self, key: CellCoord, value: bool) -> None:
-        (column, row) = key
-        self.cells[(row, column)] = value
-
-    def draw_str(self) -> None:
-        MAX_DRAW_DIMENSION: int = 60
-        if self.size.width <= MAX_DRAW_DIMENSION and \
-           self.size.height <= MAX_DRAW_DIMENSION:
-            for row in range(self.size.height):
-                print('<' if row == 0 else ' ', end='')
-                for column in range(self.size.width):
-                    print('#' if self[CellCoord(column, row)] else '.', end='')
-                print('>' if row == self.size.height - 1 else '')
-        else:
-            print("Grid is too large, cannot draw to console.")
-
-    @classmethod
-    def empty(cls, width: int, height: int):
-        return cls(np.zeros((height, width), dtype=np.bool_))
-
-
 class GridPacker:
     def __init__(self, initial_size: int, islands: List[Island]) -> None:
-        self._utilized_area = Size.zero()
-        self._mask = Grid.empty(width=initial_size, height=initial_size)
+        self._utilized_area = discrete.Size.zero()
+        self._mask = discrete.Grid.empty(width=initial_size, height=initial_size)
         self._islands: List[IslandPlacement] = [
-            IslandPlacement(offset=CellCoord.zero(), island=island)
+            IslandPlacement(offset=discrete.CellCoord.zero(), island=island)
             for island in islands
         ]
 
@@ -119,10 +54,10 @@ class GridPacker:
             #    update utilized area
             pass
         for ip in self._islands:
-            ip.offset = CellCoord(filled_x, 0)
+            ip.offset = discrete.CellCoord(filled_x, 0)
             filled_x += ip.island.mask.size.width
             (uw, uh) = self._utilized_area
-            self.utilized_area = Size(
+            self.utilized_area = discrete.Size(
                 width=filled_x,
                 height=max(ip.island.mask.size.height, uh)
             )
@@ -156,7 +91,7 @@ class Island:
             # TODO: add margin parameters
     ) -> Island:
         (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids)
-        mask = Grid.empty(
+        mask = discrete.Grid.empty(
             width=math.ceil(size.x / cell_size),
             height=math.ceil(size.y / cell_size)
         )
@@ -170,7 +105,7 @@ class Island:
             mask=mask
         )
 
-    def write_uvs(self, bm: bmesh.types.BMesh, offset: CellCoord) -> None:
+    def write_uvs(self, bm: bmesh.types.BMesh, offset: discrete.CellCoord) -> None:
         uv_ident = bm.loops.layers.uv.verify()
         offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:
@@ -214,9 +149,9 @@ class Island:
             face_ids: set[int],
             offset: Vector,
             cell_size: float,
-            mask: Grid
+            mask: discrete.Grid
     ):
-        open_cells: Set[CellCoord] = set(mask)
+        open_cells: Set[discrete.CellCoord] = set(mask)
         uv_ident = bm.loops.layers.uv.verify()
 
         for face_id in face_ids:
@@ -228,7 +163,7 @@ class Island:
             for face_tri in Triangle2D.triangulate(
                 [(u, v) for (u, v) in loop_uvs]
             ):
-                hit_cells: Set[CellCoord] = set()
+                hit_cells: Set[discrete.CellCoord] = set()
                 for open_cell_id in open_cells:
                     # We need to invert y-axis because UVs
                     # use vertically increasing y-axis.
@@ -253,7 +188,7 @@ class Island:
 
 @dataclass
 class IslandPlacement:
-    offset: CellCoord
+    offset: discrete.CellCoord
     # rotation: Enum
     #
     #   see: https://docs.python.org/3/library/enum.html
@@ -261,21 +196,6 @@ class IslandPlacement:
 
     def write_uvs(self, bm: bmesh.types.BMesh) -> None:
         self.island.write_uvs(bm, self.offset)
-
-
-class Size(NamedTuple):
-    width: int
-    height: int
-
-    def __repr__(self) -> str:
-        return "<Size(width={0}, height={1})>".format(self.width, self.height)
-
-    def __str__(self) -> str:
-        return "{0}x{1}".format(self.width, self.height)
-
-    @classmethod
-    def zero(cls):
-        return cls(0, 0)
 
 
 class Triangle2D:
