@@ -46,11 +46,11 @@ class GridPacker:
             pass
         for ip in self._islands:
             ip.offset = discrete.CellCoord(filled_x, 0)
-            filled_x += ip.island.mask.size.width
+            filled_x += ip.island.mask.width
             (uw, uh) = self._utilized_area
             self.utilized_area = discrete.Size(
                 width=filled_x,
-                height=max(ip.island.mask.size.height, uh)
+                height=max(ip.island.mask.height, uh)
             )
         print("Utilized area: {0}".format(self.utilized_area))
 
@@ -59,9 +59,9 @@ class GridPacker:
             ip.write_uvs(bm)
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
-        if ip.offset.x + ip.island.mask.size.width > self._mask.size.width:
+        if ip.offset.x + ip.island.mask.width > self._mask.width:
             return CollisionResult.OUT_OF_BOUNDS
-        if ip.offset.y + ip.island.mask.size.height > self._mask.size.height:
+        if ip.offset.y + ip.island.mask.height > self._mask.height:
             return CollisionResult.OUT_OF_BOUNDS
         raise NotImplementedError()
 

@@ -22,12 +22,13 @@ class Grid:
         assert(cells.ndim == 2)
         (height, width) = cells.shape
         self.cells = cells
-        self.size = Size(width, height)
+        self.width = width
+        self.height = height
 
     def __and__(self, other: Any) -> bool:
         if not isinstance(other, Grid):
             return NotImplemented
-        if self.size != other.size:
+        if self.width != other.width or self.height != other.height:
             raise ValueError("Grids are not same sized.")
         return self.cells & other.cells
 
@@ -40,16 +41,16 @@ class Grid:
 
     def __iter__(self) -> Iterator[CellCoord]:
         return iter([CellCoord(x, y)
-                     for x in range(self.size.width)
-                     for y in range(self.size.height)])
+                     for x in range(self.width)
+                     for y in range(self.height)])
 
     def __len__(self) -> int:
-        return self.size.width * self.size.height
+        return self.width * self.height
 
     def __repr__(self) -> str:
         return "<Grid(width={0}, height={1})>".format(
-            self.size.width,
-            self.size.height
+            self.width,
+            self.height
         )
 
     def __setitem__(self, key: CellCoord, value: bool) -> None:
@@ -58,13 +59,13 @@ class Grid:
 
     def draw_str(self) -> None:
         MAX_DRAW_DIMENSION: int = 60
-        if self.size.width <= MAX_DRAW_DIMENSION and \
-           self.size.height <= MAX_DRAW_DIMENSION:
-            for row in range(self.size.height):
+        if self.width <= MAX_DRAW_DIMENSION and \
+           self.height <= MAX_DRAW_DIMENSION:
+            for row in range(self.height):
                 print('<' if row == 0 else ' ', end='')
-                for column in range(self.size.width):
+                for column in range(self.width):
                     print('#' if self[CellCoord(column, row)] else '.', end='')
-                print('>' if row == self.size.height - 1 else '')
+                print('>' if row == self.height - 1 else '')
         else:
             print("Grid is too large, cannot draw to console.")
 

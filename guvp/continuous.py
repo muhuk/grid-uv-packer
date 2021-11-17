@@ -119,7 +119,7 @@ class Island:
                     # We need to invert y-axis because UVs
                     # use vertically increasing y-axis.
                     cell_x: int = open_cell_id[0]
-                    cell_y: int = mask.size.height - open_cell_id[1]
+                    cell_y: int = mask.height - open_cell_id[1]
                     # triangulate the cell's quad.
                     x = float(offset.x + cell_x * cell_size)
                     y = float(offset.y + cell_y * cell_size)

@@ -34,7 +34,6 @@ Boundary(moduleDiscrete, "discrete") {
   Component(size, "Size", "Named Tuple")
 
   Rel(grid, cellCoord, " ")
-  Rel(grid, size, " ")
 }
 
 Rel(gridUvPackOperator, gridPacker, " ")
