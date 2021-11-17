@@ -46,7 +46,6 @@ Rel(gridPacker, size, " ")
 
 Rel(island, cellCoord, " ")
 Rel(island, grid, " ")
-Rel(island, size, " ")
 
 Rel(islandPlacement, island, " ")
 Rel(islandPlacement, cellCoord, " ")
