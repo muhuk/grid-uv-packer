@@ -31,7 +31,6 @@ Boundary(moduleData, "packing") {
 Boundary(moduleDiscrete, "discrete") {
   Component(cellCoord, "CellCoord", "Class")
   Component(grid, "Grid", "Class")
-  Component(size, "Size", "Named Tuple")
 
   Rel(grid, cellCoord, " ")
 }
@@ -42,7 +41,6 @@ Rel(gridUvPackOperator, island, " ")
 Rel(gridPacker, cellCoord, " ")
 Rel(gridPacker, grid, " ")
 Rel(gridPacker, island, " ")
-Rel(gridPacker, size, " ")
 
 Rel(island, cellCoord, " ")
 Rel(island, grid, " ")
@@ -50,4 +48,3 @@ Rel(island, grid, " ")
 Rel(islandPlacement, island, " ")
 Rel(islandPlacement, cellCoord, " ")
 @enduml
-q

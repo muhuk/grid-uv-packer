@@ -17,7 +17,7 @@ class GridPacker:
             initial_size: int,
             islands: List[continuous.Island]
     ) -> None:
-        self._utilized_area = discrete.Size.zero()
+        self._utilized_area = (0, 0)
         self._mask = discrete.Grid.empty(
             width=initial_size,
             height=initial_size
@@ -47,12 +47,11 @@ class GridPacker:
         for ip in self._islands:
             ip.offset = discrete.CellCoord(filled_x, 0)
             filled_x += ip.island.mask.width
-            (uw, uh) = self._utilized_area
-            self.utilized_area = discrete.Size(
-                width=filled_x,
-                height=max(ip.island.mask.height, uh)
-            )
-        print("Utilized area: {0}".format(self.utilized_area))
+        self._utilized_area = (
+            filled_x,
+            max(ip.island.mask.height, self._utilized_area[1])
+        )
+        print("Utilized area: {0}".format(self._utilized_area))
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         for ip in self._islands:

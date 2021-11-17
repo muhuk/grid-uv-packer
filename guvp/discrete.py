@@ -72,18 +72,3 @@ class Grid:
     @classmethod
     def empty(cls, width: int, height: int):
         return cls(np.zeros((height, width), dtype=np.bool_))
-
-
-class Size(NamedTuple):
-    width: int
-    height: int
-
-    def __repr__(self) -> str:
-        return "<Size(width={0}, height={1})>".format(self.width, self.height)
-
-    def __str__(self) -> str:
-        return "{0}x{1}".format(self.width, self.height)
-
-    @classmethod
-    def zero(cls):
-        return cls(0, 0)
