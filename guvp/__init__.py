@@ -2,7 +2,7 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [continuous, data, discrete]:  # noqa: F821
+    for mod in [continuous, discrete, packing]:  # noqa: F821
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
@@ -13,7 +13,7 @@ else:
     import bpy_extras  # type: ignore
     import bmesh       # type: ignore
     # addon
-    from guvp import (continuous, data, discrete)  # noqa: F401
+    from guvp import (continuous, discrete, packing)  # noqa: F401
 
 
 bl_info = {
@@ -67,7 +67,7 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
-        packer = data.GridPacker(
+        packer = packing.GridPacker(
             initial_size=grid_size,
             islands=[
                 continuous.Island.from_faces(bm, face_ids, cell_size)

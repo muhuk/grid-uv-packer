@@ -19,7 +19,7 @@ Boundary(moduleContinuous, "continuous") {
   Rel(islandUvs, faceUvs, " ")
 }
 
-Boundary(moduleData, "data") {
+Boundary(moduleData, "packing") {
   Component(collisionResult, "CollisionResult", "Enum", "NO | YES | OUT_OF_BOUNDS")
   Component(gridPacker, "GridPacker", "Class")
   Component(islandPlacement, "IslandPlacement", "Data Class")
@@ -52,3 +52,4 @@ Rel(island, size, " ")
 Rel(islandPlacement, island, " ")
 Rel(islandPlacement, cellCoord, " ")
 @enduml
+q
