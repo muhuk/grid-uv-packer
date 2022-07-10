@@ -3,6 +3,7 @@ from typing import (
     Any,
     Iterator,
     NamedTuple,
+    Tuple,
 )
 
 import numpy as np            # type: ignore
@@ -56,6 +57,13 @@ class Grid:
     def __setitem__(self, key: CellCoord, value: bool) -> None:
         (column, row) = key
         self.cells[(row, column)] = value
+
+    def copy(self, margins: Tuple[int, int, int, int] = (0, 0, 0, 0)) -> Grid:
+        (before_x, before_y, after_x, after_y) = margins
+        cells = np.pad(self.cells,
+                       pad_width=[(before_y, after_y), (before_x, after_x)],
+                       constant_values=(False,))
+        return Grid(cells)
 
     def draw_str(self) -> None:
         MAX_DRAW_DIMENSION: int = 60
