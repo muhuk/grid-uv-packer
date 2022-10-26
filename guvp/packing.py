@@ -72,8 +72,8 @@ class Solution:
 
     @property
     def scaling_factor(self) -> float:
-        return float(max(self._utilized_area[0],
-                         self._utilized_area[1])) / self._mask.width
+        return float(self._initial_size) / max(self._utilized_area[0],
+                                               self._utilized_area[1])
 
     @property
     def utilized_area(self) -> Tuple[int, int]:
