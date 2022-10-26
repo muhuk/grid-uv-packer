@@ -56,6 +56,8 @@ class GridUVPackOperator(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         assert(context.mode == 'EDIT_MESH')
+        # Get out of EDIT mode.
+        bpy.ops.object.editmode_toggle()
         # We ignore the type of self.grid_size for bpy reasons.
         # So let's cast it explicitly here.
         grid_size: int = int(self.grid_size)
@@ -71,18 +73,16 @@ class GridUVPackOperator(bpy.types.Operator):
             initial_size=grid_size,
             islands=[
                 continuous.Island.from_faces(bm, face_ids, cell_size)
-                for face_ids in self._island_face_ids(context, mesh)
+                for face_ids in self._island_face_ids(mesh)
             ]
         )
         packer.run()
         print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
         packer.write(bm)
-        # We cannot write UVs in edit mode.
-        bpy.ops.object.editmode_toggle()
         bm.to_mesh(mesh)
-        bpy.ops.object.editmode_toggle()
         bm.free()
-
+        # Back into EDIT mode.
+        bpy.ops.object.editmode_toggle()
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -90,23 +90,12 @@ class GridUVPackOperator(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
 
     @staticmethod
-    def _island_face_ids(
-        context: bpy.types.Context,
-        mesh: bpy.types.Mesh
-    ) -> Iterable[set[int]]:
+    def _island_face_ids(mesh: bpy.types.Mesh) -> Iterable[set[int]]:
         """Calculate sets of faces that form a UV island."""
-        called_in_edit_mode = (context.mode == 'EDIT_MESH')
         island_face_ids = []
-        # mesh_linked_uv_islands does not work in edit mode.
-        if called_in_edit_mode:
-            bpy.ops.object.editmode_toggle()
-        # Calculate islands
         island_faces = bpy_extras.mesh_utils.mesh_linked_uv_islands(mesh)
         for face_ids in island_faces:
             island_face_ids.append(set(face_ids))
-        # Restore edit mode if function is called in edit mode.
-        if called_in_edit_mode:
-            bpy.ops.object.editmode_toggle()
         return island_face_ids
 
 
