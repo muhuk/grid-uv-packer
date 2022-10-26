@@ -55,7 +55,8 @@ class Island:
     def write_uvs(
             self,
             bm: bmesh.types.BMesh,
-            offset: discrete.CellCoord
+            offset: discrete.CellCoord,
+            scaling_factor: float
     ) -> None:
         uv_ident = bm.loops.layers.uv.verify()
         offset_vec: Vector = Vector(offset) * self.cell_size
@@ -64,6 +65,7 @@ class Island:
                 assert(face_loop.index in self.uvs[face_id])
                 face_loop[uv_ident].uv = self.uvs[face_id][face_loop.index]
                 face_loop[uv_ident].uv += offset_vec
+                face_loop[uv_ident].uv *= scaling_factor
 
     @staticmethod
     def _calculate_uvs_and_size(

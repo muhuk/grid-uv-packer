@@ -38,10 +38,10 @@ class Solution:
 
     def grow(self) -> None:
         # Limit growing.
-        if self._mask.width >= self._initial_size ** (2 * self.MAX_GROW_COUNT):
+        if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
             raise RuntimeError("solution cannot grow more")
         # Create a mask with the new size & copy current mask's contents.
-        new_size = self._mask.width ** 2
+        new_size = self._mask.width * 2
         new_mask = self._mask.copy((0,
                                     0,
                                     new_size - self._mask.width,
@@ -69,6 +69,11 @@ class Solution:
                 )
             )
         return collision_result
+
+    @property
+    def scaling_factor(self) -> float:
+        return float(max(self._utilized_area[0],
+                         self._utilized_area[1])) / self._mask.width
 
     @property
     def utilized_area(self) -> Tuple[int, int]:
@@ -141,6 +146,7 @@ class GridPacker:
                 pass
             elif collision_result is CollisionResult.OUT_OF_BOUNDS:
                 # expand solution or try another offset
+                print("growing solution {}".format(repr(solution)))
                 solution.grow()
                 # put island back into the bag, we will try again.
                 islands.append(island)
@@ -159,7 +165,9 @@ class GridPacker:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
         for ip in self._winner.islands:
-            ip.write_uvs(bm)
+            scaling_factor = self._winner.scaling_factor
+            print("scaling_factor is {}".format(scaling_factor))
+            ip.write_uvs(bm, scaling_factor)
 
 
 @dataclass(frozen=True)
@@ -190,8 +198,8 @@ class IslandPlacement:
              bounds[1] - (self.offset.y + self._island.mask.height))
         )
 
-    def write_uvs(self, bm: bmesh.types.BMesh) -> None:
-        self._island.write_uvs(bm, self.offset)
+    def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
+        self._island.write_uvs(bm, self.offset, scaling_factor)
 
     @property
     def _island(self) -> continuous.Island:
