@@ -26,7 +26,6 @@ Boundary(moduleData, "packing") {
   Component(solution, "Solution", "Class")
 
   Rel(gridPacker, collisionResult, " ")
-  Rel(gridPacker, islandPlacement, " ")
   Rel(gridPacker, solution, " ")
   Rel(solution, collisionResult, " ")
   Rel(solution, islandPlacement, " ")

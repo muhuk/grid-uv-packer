@@ -56,12 +56,16 @@ class Solution:
         # No need to update utilized area.
         pass
 
-    def offer(self, island: IslandPlacement) -> CollisionResult:
-        collision_result = self._check_collision(island)
+    def offer(self, island: continuous.Island) -> CollisionResult:
+        island_placement = IslandPlacement(
+            offset=discrete.CellCoord(self._utilized_area[0], 0),
+            island=island
+        )
+        collision_result = self._check_collision(island_placement)
         if collision_result is CollisionResult.NO:
-            self.islands.append(island)
-            self._write_island_to_mask(island)
-            self._update_utilized_area(island)
+            self.islands.append(island_placement)
+            self._write_island_to_mask(island_placement)
+            self._update_utilized_area(island_placement)
         elif collision_result is CollisionResult.YES:
             # nothing to do here, let the solver decide.
             pass
@@ -80,10 +84,6 @@ class Solution:
     def scaling_factor(self) -> float:
         return float(self._initial_size) / max(self._utilized_area[0],
                                                self._utilized_area[1])
-
-    @property
-    def utilized_area(self) -> Tuple[int, int]:
-        return self._utilized_area
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
         island_bounds = ip.get_bounds()
@@ -141,12 +141,7 @@ class GridPacker:
         islands = deque(self._islands)
         while len(islands) > 0:
             island = islands.popleft()
-            (x, _) = solution.utilized_area
-            ip = IslandPlacement(
-                offset=discrete.CellCoord(x, 0),
-                island=island
-            )
-            collision_result = solution.offer(ip)
+            collision_result = solution.offer(island)
             print("collision result is {}".format(collision_result))
             if collision_result is CollisionResult.NO:
                 # no collision, continue from next island.
@@ -169,7 +164,6 @@ class GridPacker:
                     )
                 )
         self._winner = solution
-        print("Utilized area: {0}".format(solution._utilized_area))
         print("Fitness: {0}".format(solution.fitness))
 
     def write(self, bm: bmesh.types.BMesh) -> None:
