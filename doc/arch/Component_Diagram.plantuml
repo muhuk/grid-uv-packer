@@ -23,9 +23,13 @@ Boundary(moduleData, "packing") {
   Component(collisionResult, "CollisionResult", "Enum", "NO | YES | OUT_OF_BOUNDS")
   Component(gridPacker, "GridPacker", "Class")
   Component(islandPlacement, "IslandPlacement", "Data Class")
+  Component(solution, "Solution", "Class")
 
   Rel(gridPacker, collisionResult, " ")
   Rel(gridPacker, islandPlacement, " ")
+  Rel(gridPacker, solution, " ")
+  Rel(solution, collisionResult, " ")
+  Rel(solution, islandPlacement, " ")
 }
 
 Boundary(moduleDiscrete, "discrete") {

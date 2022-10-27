@@ -1,0 +1,1107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="681px" preserveAspectRatio="none" style="width:1407px;height:681px;background:#FFFFFF;" version="1.1" viewBox="0 0 1407 681" width="1407px" zoomAndPan="magnify"><defs/><g><!--MD5=[554736718e0d3f75d0dc1698342af2ec]
+cluster moduleInit--><rect fill="#FFFFFF" height="133" style="stroke:#444444;stroke-width:1.0;stroke-dasharray:7.0,7.0;" width="236" x="7" y="349.3301"/><text fill="#444444" font-family="sans-serif" font-size="18" font-weight="bold" lengthAdjust="spacing" text-decoration="underline" textLength="34" x="108" y="378.0381">init</text><!--MD5=[74f7ecd06944a6bff9df4b8eab8b5830]
+cluster moduleContinuous--><rect fill="#FFFFFF" height="318" style="stroke:#444444;stroke-width:1.0;stroke-dasharray:7.0,7.0;" width="535" x="866" y="357.3301"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="98" x="1084.5" y="384.1816">continuous</text><!--MD5=[2640a1b88e797d002e76dc2525fdbbf0]
+cluster moduleData--><rect fill="#FFFFFF" height="301" style="stroke:#444444;stroke-width:1.0;stroke-dasharray:7.0,7.0;" width="547" x="281" y="98.3301"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="68" x="520.5" y="125.1816">packing</text><!--MD5=[7550da765d468ca04652470853eda635]
+cluster moduleDiscrete--><rect fill="#FFFFFF" height="131" style="stroke:#444444;stroke-width:1.0;stroke-dasharray:7.0,7.0;" width="335.5" x="1054.5" y="169.3301"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="73" x="1185.75" y="196.1816">discrete</text><!--MD5=[f563f74fbaa389ea1745abc60b65308d]
+entity gridUvPackOperator--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="204" x="23" y="398.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="85" y="419.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="184" x="33" y="437.6504">GridUVPackOperator</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="62" x="94" y="452.5625">[Operator]</text><!--MD5=[e5d5cbf8d62fd396ef3770f07f982ce0]
+entity faceUvs--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="126" x="1259" y="451.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="1282" y="472.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="75" x="1284.5" y="490.6504">FaceUVs</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="106" x="1269" y="505.5625">[Dict[int, Vector]]</text><!--MD5=[d110c8ac324c654597f54407a50a8771]
+entity islandUvs--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="145" x="1048" y="591.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="1080.5" y="612.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="86" x="1077.5" y="630.6504">IslandUVs</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="125" x="1058" y="645.5625">[Dickt[int, FaceUVs]]</text><!--MD5=[342d3ac437f82c1d586ae0442a30a790]
+entity island--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="100" x="882" y="404.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="892" y="425.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="52" x="906" y="443.6504">Island</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="72" x="896" y="458.5625">[Data Class]</text><!--MD5=[93364d9ebdc11ee35b984a2e457c9ad2]
+entity triangle2d--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="114" x="1063.5" y="489.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="1080.5" y="510.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="94" x="1073.5" y="528.6504">Triangle2D</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="40" x="1100.5" y="543.5625">[Class]</text><!--MD5=[86e614f499e28ff8949a78b665a14cb3]
+entity collisionResult--><rect fill="#85BBF0" height="115.4531" style="stroke:#78A8D8;stroke-width:1.5;" width="147" x="656" y="266.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="689.5" y="287.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="127" x="666" y="305.6504">CollisionResult</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="44" x="707.5" y="320.5625">[Enum]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="731.5" y="336.3877"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="694.5" y="352.6846">NO | YES |</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124" x="667.5" y="368.9814">OUT_OF_BOUNDS</text><!--MD5=[c880a479c2e2f5d8768359305065102b]
+entity gridPacker--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="118" x="297" y="230.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="316" y="251.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="98" x="307" y="269.6504">GridPacker</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="40" x="336" y="284.5625">[Class]</text><!--MD5=[0a75a2aef96ede190b08102781399996]
+entity islandPlacement--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="165" x="647" y="163.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="689.5" y="184.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="145" x="657" y="202.6504">IslandPlacement</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="72" x="693.5" y="217.5625">[Data Class]</text><!--MD5=[12f6e01189d453d5b4317e8f76585cd2]
+entity solution--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="100" x="481" y="230.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="491" y="251.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="71" x="495.5" y="269.6504">Solution</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="40" x="511" y="284.5625">[Class]</text><!--MD5=[a6a18668f1765259cc8e6045b8fc9919]
+entity cellCoord--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="104" x="1270" y="216.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="1282" y="237.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="84" x="1280" y="255.6504">CellCoord</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="40" x="1302" y="270.5625">[Class]</text><!--MD5=[6a8dee2804e2518456c89a1d133c3ec2]
+entity grid--><rect fill="#85BBF0" height="66.5625" style="stroke:#78A8D8;stroke-width:1.5;" width="100" x="1070.5" y="216.8301"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="80" x="1080.5" y="237.9688">«component»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="36" x="1102.5" y="255.6504">Grid</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="40" x="1100.5" y="270.5625">[Class]</text><!--MD5=[dfc6a822cecba1bf533edd99e5552a95]
+link island to faceUvs--><path d="M982.14,444.2801 C1050.02,452.5001 1172.87,467.3901 1250.52,476.7901 " fill="none" id="island-to-faceUvs" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1258.82,477.8001,1251.2364,473.8645,1250.5185,479.8214,1258.82,477.8001" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1122.5" y="450.4688"/><!--MD5=[1ba79b038e81af51d6115d1253aca2f4]
+link island to islandUvs--><path d="M957.14,472.0701 C978.73,500.9801 1012.17,542.8301 1046.5,574.3301 C1051.06,578.5201 1055.99,582.6501 1061.05,586.6301 " fill="none" id="island-to-islandUvs" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1067.51,591.5901,1062.9926,584.338,1059.338,589.0965,1067.51,591.5901" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1017" y="537.4688"/><!--MD5=[7951ad1e4e39ffc7b029b52e272a50b3]
+link island to triangle2d--><path d="M982,460.6601 C1004.59,470.9601 1031.7,483.3101 1055.85,494.3201 " fill="none" id="island-to-triangle2d" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1063.24,497.6901,1057.2003,491.6468,1054.7158,497.1082,1063.24,497.6901" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1017" y="473.4688"/><!--MD5=[02d988c960101decdd9d494a8dd17100]
+link islandUvs to faceUvs--><path d="M1169.29,591.8001 C1198.54,571.2701 1236.07,544.9301 1266.49,523.5801 " fill="none" id="islandUvs-to-faceUvs" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1273.26,518.8301,1264.9901,520.977,1268.441,525.8854,1273.26,518.8301" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1228" y="548.4688"/><!--MD5=[56681c9050bda74405568ce7da7b3077]
+link gridPacker to collisionResult--><path d="M406.59,297.9101 C428.42,310.7401 454.97,323.8301 481,330.3301 C535.51,343.9301 598.89,342.0801 647.86,337.0101 " fill="none" id="gridPacker-to-collisionResult" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="655.9,336.1301,647.6243,334.0057,648.2681,339.9711,655.9,336.1301" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="533" y="327.4688"/><!--MD5=[6c6af54631c682059a8507bcd0961800]
+link gridPacker to islandPlacement--><path d="M415,235.9101 C435.39,227.1501 458.78,218.4701 481,213.3301 C532.35,201.4501 591.19,197.2701 638.61,196.1501 " fill="none" id="gridPacker-to-islandPlacement" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="646.72,195.9801,638.6575,193.1525,638.7862,199.1511,646.72,195.9801" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="533" y="196.4688"/><!--MD5=[44d08ea731cddd063a1ef513fb2cfc95]
+link gridPacker to solution--><path d="M415.09,264.3301 C433.56,264.3301 453.98,264.3301 472.41,264.3301 " fill="none" id="gridPacker-to-solution" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="480.73,264.3301,472.73,261.3301,472.73,267.3301,480.73,264.3301" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="450" y="261.4688"/><!--MD5=[8c8acb58a6f750674d1c72087e1a7537]
+link solution to collisionResult--><path d="M581.08,279.3201 C601.4,285.5201 625.51,292.8801 648.28,299.8301 " fill="none" id="solution-to-collisionResult" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="655.94,302.1701,649.1678,296.9607,647.4123,302.6982,655.94,302.1701" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="616" y="286.4688"/><!--MD5=[6ccba50d415817ead72a8f5b53b9172f]
+link solution to islandPlacement--><path d="M581.08,247.6001 C598.72,241.5801 619.21,234.6001 639.2,227.7801 " fill="none" id="solution-to-islandPlacement" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="646.83,225.1801,638.2898,224.9265,640.2289,230.6046,646.83,225.1801" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="616" y="234.4688"/><!--MD5=[75a6eb3f539815b655845181e30f34ee]
+link grid to cellCoord--><path d="M1170.56,250.3301 C1198.08,250.3301 1232.62,250.3301 1261.66,250.3301 " fill="none" id="grid-to-cellCoord" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1269.69,250.3301,1261.69,247.3301,1261.69,253.3301,1269.69,250.3301" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1228" y="247.4688"/><!--MD5=[eb83bec9bb8a61b4c87c2ea2a1312cc3]
+link gridUvPackOperator to gridPacker--><path d="M171.79,398.7401 C209.55,371.0401 263.12,331.7401 302.59,302.7801 " fill="none" id="gridUvPackOperator-to-gridPacker" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="309.29,297.8701,301.0631,300.1762,304.608,305.0171,309.29,297.8701" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="264" y="330.4688"/><!--MD5=[369fd720e3d06dfb09ffedf4889d40b7]
+link gridUvPackOperator to island--><path d="M191.29,465.8801 C236.13,485.8501 297.69,507.3301 355,507.3301 C355,507.3301 355,507.3301 730.5,507.3301 C781.06,507.3301 835.08,487.4701 874.29,469.0601 " fill="none" id="gridUvPackOperator-to-island" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="881.93,465.4001,873.4191,466.1519,876.012,471.5627,881.93,465.4001" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="533" y="504.4688"/><!--MD5=[3ce65040d90d58871a21d4d9ca1ea040]
+link gridPacker to cellCoord--><path d="M364.26,230.8001 C380.89,164.1401 428.37,21.3301 530,21.3301 C530,21.3301 530,21.3301 1121.5,21.3301 C1219.8,21.3301 1280.72,142.7701 1306.58,208.7801 " fill="none" id="gridPacker-to-cellCoord" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1309.56,216.5401,1309.5046,207.9963,1303.9004,210.1394,1309.56,216.5401" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="849" y="18.4688"/><!--MD5=[2cf8235ca776b74dfa05dbea40812c39]
+link gridPacker to grid--><path d="M372.07,230.7601 C397.09,180.7001 452.28,92.3301 530,92.3301 C530,92.3301 530,92.3301 933,92.3301 C1005.8,92.3301 1064.79,163.2901 1095.78,210.1001 " fill="none" id="gridPacker-to-grid" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1100.14,216.8201,1098.2935,208.478,1093.2636,211.749,1100.14,216.8201" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="731.5" y="89.4688"/><!--MD5=[77c5461a0ff2019cee0384321b7c8248]
+link gridPacker to island--><path d="M397.4,297.8901 C420.58,315.5801 450.96,336.2601 481,349.3301 C614.14,407.2501 785.86,427.8101 873.7,434.8501 " fill="none" id="gridPacker-to-island" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="881.68,435.4701,873.9406,431.8505,873.4689,437.8319,881.68,435.4701" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="616" y="391.4688"/><!--MD5=[5cf0011e5471cbe1ccfb65a7350007ef]
+link island to cellCoord--><path d="M982.14,415.9401 C1034.61,391.8701 1120.08,352.2201 1193,316.3301 C1215.87,305.0701 1240.84,292.3101 1262.59,281.0301 " fill="none" id="island-to-cellCoord" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1269.84,277.2601,1261.3575,278.2833,1264.1219,283.6086,1269.84,277.2601" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1122.5" y="313.4688"/><!--MD5=[32c57918fe8fbd8defa44474df5400a5]
+link island to grid--><path d="M947.24,404.8001 C960.65,376.3601 982.99,335.8901 1012,308.3301 C1026.66,294.4001 1045.32,282.8001 1062.96,273.7301 " fill="none" id="island-to-grid" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1070.45,269.9901,1061.9522,270.8777,1064.6312,276.2464,1070.45,269.9901" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1017" y="301.4688"/><!--MD5=[b7ca24ba3b38edcab1baa169168b0dbe]
+link islandPlacement to island--><path d="M812.22,230.6901 C820.82,236.1601 828.97,242.3501 836,249.3301 C878,291.0001 904.76,355.0801 918.83,396.8601 " fill="none" id="islandPlacement-to-island" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="921.4,404.6501,921.75,396.1132,916.0504,397.9881,921.4,404.6501" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="849" y="259.4688"/><!--MD5=[9b117525d3206f82f30638e7e613619e]
+link islandPlacement to cellCoord--><path d="M812.02,188.5901 C905.12,180.6901 1061.56,173.8101 1193,199.3301 C1216.42,203.8801 1241.02,212.6201 1262.33,221.6001 " fill="none" id="islandPlacement-to-cellCoord" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="1269.72,224.7801,1263.5653,218.8539,1261.1862,224.3621,1269.72,224.7801" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="0" x="1017" y="179.4688"/><!--MD5=[77e90d7e09da564659470cc21bd9703d]
+@startuml Component_Diagram
+!include ../c4/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+
+Boundary(moduleInit, "__init__") {
+  Component(gridUvPackOperator, "GridUVPackOperator", "Operator")
+}
+
+Boundary(moduleContinuous, "continuous") {
+  Component(faceUvs, "FaceUVs", "Dict[int, Vector]")
+  Component(islandUvs, "IslandUVs", "Dickt[int, FaceUVs]")
+  Component(island, "Island", "Data Class")
+  Component(triangle2d, "Triangle2D", "Class")
+
+  Rel(island, faceUvs, " ")
+  Rel(island, islandUvs, " ")
+  Rel(island, triangle2d, " ")
+
+  Rel(islandUvs, faceUvs, " ")
+}
+
+Boundary(moduleData, "packing") {
+  Component(collisionResult, "CollisionResult", "Enum", "NO | YES | OUT_OF_BOUNDS")
+  Component(gridPacker, "GridPacker", "Class")
+  Component(islandPlacement, "IslandPlacement", "Data Class")
+  Component(solution, "Solution", "Class")
+
+  Rel(gridPacker, collisionResult, " ")
+  Rel(gridPacker, islandPlacement, " ")
+  Rel(gridPacker, solution, " ")
+  Rel(solution, collisionResult, " ")
+  Rel(solution, islandPlacement, " ")
+}
+
+Boundary(moduleDiscrete, "discrete") {
+  Component(cellCoord, "CellCoord", "Class")
+  Component(grid, "Grid", "Class")
+
+  Rel(grid, cellCoord, " ")
+}
+
+Rel(gridUvPackOperator, gridPacker, " ")
+Rel(gridUvPackOperator, island, " ")
+
+Rel(gridPacker, cellCoord, " ")
+Rel(gridPacker, grid, " ")
+Rel(gridPacker, island, " ")
+
+Rel(island, cellCoord, " ")
+Rel(island, grid, " ")
+
+Rel(islandPlacement, island, " ")
+Rel(islandPlacement, cellCoord, " ")
+@enduml
+
+@startuml Component_Diagram
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam LegendBorderColor transparent
+skinparam LegendBackgroundColor transparent
+skinparam LegendFontColor #FFFFFF
+
+skinparam shadowing<<legendArea>> false
+skinparam rectangle<<legendArea>> {
+    backgroundcolor #00000000
+    bordercolor #00000000
+}
+
+skinparam rectangle {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam database {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam queue {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+skinparam actor {
+    StereotypeFontSize 12
+    shadowing false
+    style awesome
+}
+
+skinparam person {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam rectangle<<boundary>> {
+    Shadowing false
+    StereotypeFontSize 6
+    StereotypeFontColor transparent
+    BorderStyle dashed
+}
+
+skinparam package {
+    StereotypeFontSize 6
+    StereotypeFontColor transparent
+    FontStyle plain
+    BackgroundColor transparent
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<boundary>>StereotypeFontColor transparent
+skinparam rectangle<<boundary>>StereotypeFontColor transparent
+
+
+skinparam rectangle<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<enterprise_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<enterprise_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<enterprise_boundary>>StereotypeFontColor transparent
+
+
+
+skinparam rectangle<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<system_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<system_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<system_boundary>>StereotypeFontColor transparent
+
+
+
+skinparam rectangle<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<container_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<container_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<container_boundary>>StereotypeFontColor transparent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam database<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam queue<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam actor<<person>> {
+    StereotypeFontColor #08427B
+    FontColor #08427B
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam person<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+
+
+skinparam rectangle<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam database<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam queue<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam actor<<external_person>> {
+    StereotypeFontColor #686868
+    FontColor #686868
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam person<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+
+
+skinparam rectangle<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam database<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam queue<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam actor<<system>> {
+    StereotypeFontColor #1168BD
+    FontColor #1168BD
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam person<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+
+skinparam rectangle<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam database<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam queue<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam actor<<external_system>> {
+    StereotypeFontColor #999999
+    FontColor #999999
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam person<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+
+
+skinparam rectangle<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<enterprise_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<enterprise_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<enterprise_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<enterprise_boundary>>StereotypeFontColor transparent
+
+
+
+skinparam rectangle<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<system_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<system_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<system_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<system_boundary>>StereotypeFontColor transparent
+
+
+
+
+
+
+
+sprite $person [48x48/16] {
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+0000000000000000000049BCCA7200000000000000000000
+0000000000000000006EFFFFFFFFB3000000000000000000
+00000000000000001CFFFFFFFFFFFF700000000000000000
+0000000000000001EFFFFFFFFFFFFFF80000000000000000
+000000000000000CFFFFFFFFFFFFFFFF6000000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+00000000000001FFFFFFFFFFFFFFFFFFF900000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFF00000000000000
+0000000000000BFFFFFFFFFFFFFFFFFFFF40000000000000
+0000000000000EFFFFFFFFFFFFFFFFFFFF70000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000DFFFFFFFFFFFFFFFFFFFF60000000000000
+0000000000000AFFFFFFFFFFFFFFFFFFFF40000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFE00000000000000
+00000000000000EFFFFFFFFFFFFFFFFFF800000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+000000000000000BFFFFFFFFFFFFFFFF5000000000000000
+0000000000000001DFFFFFFFFFFFFFF70000000000000000
+00000000000000000BFFFFFFFFFFFF500000000000000000
+0000000000000000005DFFFFFFFFA1000000000000000000
+0000000000000000000037ABB96100000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000025788300000000005886410000000000000
+000000000007DFFFFFFD9643347BFFFFFFFB400000000000
+0000000004EFFFFFFFFFFFFFFFFFFFFFFFFFFB1000000000
+000000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFD200000000
+00000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE10000000
+0000003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB0000000
+000000BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5000000
+000003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD000000
+000009FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF200000
+00000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF600000
+00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF800000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA00000
+00000EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF700000
+000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE100000
+0000008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD3000000
+000000014555555555555555555555555555555300000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+}
+
+sprite $person2 [48x48/16] {
+0000000000000000000049BCCA7200000000000000000000
+0000000000000000006EFFFFFFFFB3000000000000000000
+00000000000000001CFFFFFFFFFFFF700000000000000000
+0000000000000001EFFFFFFFFFFFFFF80000000000000000
+000000000000000CFFFFFFFFFFFFFFFF6000000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+00000000000001FFFFFFFFFFFFFFFFFFF900000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFF00000000000000
+0000000000000BFFFFFFFFFFFFFFFFFFFF40000000000000
+0000000000000EFFFFFFFFFFFFFFFFFFFF70000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000DFFFFFFFFFFFFFFFFFFFF60000000000000
+0000000000000AFFFFFFFFFFFFFFFFFFFF40000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFE00000000000000
+00000000000000EFFFFFFFFFFFFFFFFFF800000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+000000000000000BFFFFFFFFFFFFFFFF5000000000000000
+0000000000000001DFFFFFFFFFFFFFF70000000000000000
+00000000000000000BFFFFFFFFFFFF500000000000000000
+0000000000000000005DFFFFFFFFA1000000000000000000
+0000000000000000000037ABB96100000000000000000000
+000000000002578888300000000005888864100000000000
+0000000007DFFFFFFFFD9643347BFFFFFFFFFB4000000000
+00000004EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB10000000
+0000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD2000000
+000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE100000
+00003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+0000BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF50000
+0003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD0000
+0009FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2000
+000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6000
+000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA000
+000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6000
+0009FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF2000
+0003FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFD0000
+0000BFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFF50000
+00003FFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFB00000
+000006FFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFE100000
+0000007FFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFD2000000
+00000004EFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFB10000000
+0000000007DF8FFFFFFFFFFFFFFFFFFFFFF8FB4000000000
+000000000002578888888888888888888864100000000000
+}
+
+sprite $robot [48x48/16] {
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000005BFFFFFFFFFFFFFFFFFFFFFE9100000000000
+0000000000AFFFFFFFFFFFFFFFFFFFFFFFFFE30000000000
+0000000007FFFFFFFFFFFFFFFFFFFFFFFFFFFE1000000000
+000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000000000
+000000004FFFFFFFFFFFFFFFFFFFFFFFFFFFFFC000000000
+000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFFFD000000000
+000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE000000000
+000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE000000000
+000699405FFFFFFC427FFFFFFFFFC427FFFFFFE009982000
+008FFF705FFFFFE10006FFFFFFFE00007FFFFFE00FFFF100
+00CFFF705FFFFFA00001FFFFFFF900002FFFFFE00FFFF500
+00DFFF705FFFFFB00002FFFFFFFA00003FFFFFE00FFFF500
+00DFFF705FFFFFF4000AFFFFFFFF3000BFFFFFE00FFFF500
+00DFFF705FFFFFFFA8DFFFFFFFFFFA8DFFFFFFE00FFFF500
+00DFFF705FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE00FFFF500
+00DFFF705FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE00FFFF500
+00DFFF705FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE00FFFF500
+00DFFF705FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE00FFFF500
+00DFFF705FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE00FFFF500
+00CFFF705FFFFFF87777777777777777CFFFFFE00FFFF500
+008FFF705FFFFFF100000000000000009FFFFFE00FFFF100
+000699405FFFFFF76666666666666666CFFFFFE009982000
+000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE000000000
+000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFFFE000000000
+000000004FFFFFFFFFFFFFFFFFFFFFFFFFFFFFC000000000
+000000000EFFFFFFFFFFFFFFFFFFFFFFFFFFFF7000000000
+0000000005FFFFFFFFFFFFFFFFFFFFFFFFFFFD0000000000
+00000000004CFFFFFFFFFFFFFFFFFFFFFFFF910000000000
+000000000000011111111111111111111110000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+}
+
+sprite $robot2 [48x48/16] {
+000000000000000088888888888888880000000000000000
+000000000000000AFFFFFFFFFFFFFFFFA000000000000000
+00000000000000CFFFFFFFFFFFFFFFFFFC00000000000000
+00000000000004EFFFFFFFFFFFFFFFFFFE40000000000000
+0000000000000AFFFFFFFFFFFFFFFFFFFFA0000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000888FFFFFFFFFFFFFFFFFFFF88800000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000008FF8FFFFFFFFFFFFFFFFFFFF8FF80000000000
+00000000000888FFFFFFFFFFFFFFFFFFFF88800000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000008FFFFFFFFFFFFFFFFFFFF80000000000000
+00000000000004CFFFFFFFFFFFFFFFFFFC40000000000000
+000000488888848CFFFFFFFFFFFFFFFFC848888884000000
+00000CFFFFFFFFC888888888888888888CFFFFFFFFC00000
+00008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF80000
+0000CFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC0000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+0008FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF8000
+0008FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF8000
+0008FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF8000
+0008FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF8000
+0000CFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFC0000
+00008FFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFF80000
+00000CFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFC00000
+000000488887578888888888888888888864688884000000
+000000000000000000000000000000000000000000000000
+}
+
+
+
+
+skinparam rectangle<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam database<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam queue<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam actor<<person>> {
+    StereotypeFontColor #08427B
+    FontColor #08427B
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam person<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam database<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam queue<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam actor<<container>> {
+    StereotypeFontColor #438DD5
+    FontColor #438DD5
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam person<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+
+skinparam rectangle<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam database<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam queue<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam actor<<external_container>> {
+    StereotypeFontColor #B3B3B3
+    FontColor #B3B3B3
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam person<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+
+
+
+skinparam rectangle<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam database<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam queue<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam actor<<container_boundary>> {
+    FontColor transparent
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam person<<container_boundary>> {
+    FontColor #444444
+    BackgroundColor transparent
+    BorderColor #444444
+}
+skinparam package<<container_boundary>>StereotypeFontColor transparent
+skinparam rectangle<<container_boundary>>StereotypeFontColor transparent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam database<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam queue<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam actor<<component>> {
+    StereotypeFontColor #85BBF0
+    FontColor #85BBF0
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam person<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+
+
+skinparam rectangle<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam database<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam queue<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam actor<<external_component>> {
+    StereotypeFontColor #CCCCCC
+    FontColor #CCCCCC
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam person<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+left to right direction
+
+rectangle "==__init__" <<boundary>> as moduleInit  {
+  rectangle "==GridUVPackOperator\n//<size:12>[Operator]</size>//" <<component>> as gridUvPackOperator 
+}
+
+rectangle "==continuous" <<boundary>> as moduleContinuous  {
+  rectangle "==FaceUVs\n//<size:12>[Dict[int, Vector]]</size>//" <<component>> as faceUvs 
+  rectangle "==IslandUVs\n//<size:12>[Dickt[int, FaceUVs]]</size>//" <<component>> as islandUvs 
+  rectangle "==Island\n//<size:12>[Data Class]</size>//" <<component>> as island 
+  rectangle "==Triangle2D\n//<size:12>[Class]</size>//" <<component>> as triangle2d 
+
+  island - ->> faceUvs : ** **
+  island - ->> islandUvs : ** **
+  island - ->> triangle2d : ** **
+
+  islandUvs - ->> faceUvs : ** **
+}
+
+rectangle "==packing" <<boundary>> as moduleData  {
+  rectangle "==CollisionResult\n//<size:12>[Enum]</size>//\n\n NO | YES | OUT_OF_BOUNDS" <<component>> as collisionResult 
+  rectangle "==GridPacker\n//<size:12>[Class]</size>//" <<component>> as gridPacker 
+  rectangle "==IslandPlacement\n//<size:12>[Data Class]</size>//" <<component>> as islandPlacement 
+  rectangle "==Solution\n//<size:12>[Class]</size>//" <<component>> as solution 
+
+  gridPacker - ->> collisionResult : ** **
+  gridPacker - ->> islandPlacement : ** **
+  gridPacker - ->> solution : ** **
+  solution - ->> collisionResult : ** **
+  solution - ->> islandPlacement : ** **
+}
+
+rectangle "==discrete" <<boundary>> as moduleDiscrete  {
+  rectangle "==CellCoord\n//<size:12>[Class]</size>//" <<component>> as cellCoord 
+  rectangle "==Grid\n//<size:12>[Class]</size>//" <<component>> as grid 
+
+  grid - ->> cellCoord : ** **
+}
+
+gridUvPackOperator - ->> gridPacker : ** **
+gridUvPackOperator - ->> island : ** **
+
+gridPacker - ->> cellCoord : ** **
+gridPacker - ->> grid : ** **
+gridPacker - ->> island : ** **
+
+island - ->> cellCoord : ** **
+island - ->> grid : ** **
+
+islandPlacement - ->> island : ** **
+islandPlacement - ->> cellCoord : ** **
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 19:46:50 TRT 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: SG
+--></g></svg>
