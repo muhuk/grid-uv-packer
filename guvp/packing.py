@@ -42,20 +42,6 @@ class Solution:
         # TODO: use a function on Grid instead of accessing cells directly.
         return float(ones) / (size * size)
 
-    def grow(self) -> None:
-        # Limit growing.
-        if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
-            raise RuntimeError("solution cannot grow more")
-        # Create a mask with the new size & copy current mask's contents.
-        new_size = self._mask.width * 2
-        new_mask = self._mask.copy((0,
-                                    0,
-                                    new_size - self._mask.width,
-                                    new_size - self._mask.height))
-        self._mask = new_mask
-        # No need to update utilized area.
-        pass
-
     def offer(self, island: continuous.Island) -> CollisionResult:
         island_placement = IslandPlacement(
             offset=discrete.CellCoord(self._utilized_area[0], 0),
@@ -70,8 +56,9 @@ class Solution:
             # nothing to do here, let the solver decide.
             pass
         elif collision_result is CollisionResult.OUT_OF_BOUNDS:
-            # nothing to do here, let the solver decide.
-            pass
+            # expand solution or try another offset
+            print("growing solution {!r}".format(self))
+            self._grow()
         else:
             raise NotImplementedError(
                 "Unhandled collision result case '{0!r}'".format(
@@ -101,6 +88,20 @@ class Solution:
             return CollisionResult.YES
         else:
             return CollisionResult.NO
+
+    def _grow(self) -> None:
+        # Limit growing.
+        if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
+            raise RuntimeError("solution cannot grow more")
+        # Create a mask with the new size & copy current mask's contents.
+        new_size = self._mask.width * 2
+        new_mask = self._mask.copy((0,
+                                    0,
+                                    new_size - self._mask.width,
+                                    new_size - self._mask.height))
+        self._mask = new_mask
+        # No need to update utilized area.
+        pass
 
     def _update_utilized_area(self, ip: IslandPlacement) -> None:
         (_, _, a, b) = ip.get_bounds()
@@ -151,9 +152,6 @@ class GridPacker:
                 islands.append(island)
                 pass
             elif collision_result is CollisionResult.OUT_OF_BOUNDS:
-                # expand solution or try another offset
-                print("growing solution {}".format(repr(solution)))
-                solution.grow()
                 # put island back into the bag, we will try again.
                 islands.append(island)
                 pass
