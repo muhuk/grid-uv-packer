@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import (dataclass, field, InitVar)
 import enum
+import random
 from typing import (List, Tuple, Optional)
 import weakref
 
@@ -18,9 +19,14 @@ class Solution:
     MAX_GROW_COUNT = 2
 
     """Store a set of placements."""
-    def __init__(self, initial_size: int) -> None:
+    def __init__(
+            self,
+            initial_size: int,
+            random_seed: int
+    ) -> None:
         self.islands: List[IslandPlacement] = []
         self._initial_size = initial_size
+        self._rng = random.Random(random_seed)
         self._utilized_area = (0, 0)
         self._mask = discrete.Grid.empty(
             width=initial_size,
@@ -109,13 +115,17 @@ class Solution:
 
 
 class GridPacker:
+    SEED_MAX = 2 ** 31 - 1
+
     def __init__(
             self,
             initial_size: int,
-            islands: List[continuous.Island]
+            islands: List[continuous.Island],
+            random_seed: Optional[int] = None
     ) -> None:
         self._initial_size = initial_size
         self._islands = islands
+        self._rng = random.Random(random_seed)
         self._winner: Optional[Solution] = None
 
     @property
@@ -126,7 +136,8 @@ class GridPacker:
             return self._winner.fitness
 
     def run(self) -> None:
-        solution = Solution(self._initial_size)
+        solution = Solution(self._initial_size,
+                            self._rng.randint(0, self.SEED_MAX))
         islands = deque(self._islands)
         while len(islands) > 0:
             island = islands.popleft()
