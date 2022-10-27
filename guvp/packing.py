@@ -42,7 +42,7 @@ class Solution:
         # TODO: use a function on Grid instead of accessing cells directly.
         return float(ones) / (size * size)
 
-    def offer(self, island: continuous.Island) -> CollisionResult:
+    def offer(self, island: continuous.Island) -> bool:
         island_placement = IslandPlacement(
             offset=discrete.CellCoord(self._utilized_area[0], 0),
             island=island
@@ -52,20 +52,21 @@ class Solution:
             self.islands.append(island_placement)
             self._write_island_to_mask(island_placement)
             self._update_utilized_area(island_placement)
+            return True
         elif collision_result is CollisionResult.YES:
             # nothing to do here, let the solver decide.
-            pass
+            return False
         elif collision_result is CollisionResult.OUT_OF_BOUNDS:
             # expand solution or try another offset
             print("growing solution {!r}".format(self))
             self._grow()
+            return False
         else:
             raise NotImplementedError(
                 "Unhandled collision result case '{0!r}'".format(
                     collision_result
                 )
             )
-        return collision_result
 
     @property
     def scaling_factor(self) -> float:
@@ -142,25 +143,10 @@ class GridPacker:
         islands = deque(self._islands)
         while len(islands) > 0:
             island = islands.popleft()
-            collision_result = solution.offer(island)
-            print("collision result is {}".format(collision_result))
-            if collision_result is CollisionResult.NO:
-                # no collision, continue from next island.
-                pass
-            elif collision_result is CollisionResult.YES:
-                # put island back into the bag, we will try again.
+            # offer returns False when the island
+            # is not accepted to the solution
+            if not solution.offer(island):
                 islands.append(island)
-                pass
-            elif collision_result is CollisionResult.OUT_OF_BOUNDS:
-                # put island back into the bag, we will try again.
-                islands.append(island)
-                pass
-            else:
-                raise NotImplementedError(
-                    "Unhandled collision result case '{0!r}'".format(
-                        collision_result
-                    )
-                )
         self._winner = solution
         print("Fitness: {0}".format(solution.fitness))
 
