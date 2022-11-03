@@ -17,6 +17,7 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 class Solution:
     MAX_GROW_COUNT = 2
+    MAX_TRIES_PER_OFFER = 100    # Hard limit for tries
 
     """Store a set of placements."""
     def __init__(
@@ -43,30 +44,42 @@ class Solution:
         return float(ones) / (size * size)
 
     def offer(self, island: continuous.Island) -> bool:
-        island_placement = IslandPlacement(
-            offset=discrete.CellCoord(self._utilized_area[0], 0),
-            island=island
+        tries_left: int = min(
+            self._mask.width * self._mask.height / 3,
+            self.MAX_TRIES_PER_OFFER
         )
-        collision_result = self._check_collision(island_placement)
-        if collision_result is CollisionResult.NO:
-            self.islands.append(island_placement)
-            self._write_island_to_mask(island_placement)
-            self._update_utilized_area(island_placement)
-            return True
-        elif collision_result is CollisionResult.YES:
-            # nothing to do here, let the solver decide.
-            return False
-        elif collision_result is CollisionResult.OUT_OF_BOUNDS:
-            # expand solution or try another offset
-            print("growing solution {!r}".format(self))
-            self._grow()
-            return False
-        else:
-            raise NotImplementedError(
-                "Unhandled collision result case '{0!r}'".format(
-                    collision_result
-                )
+        is_successful: bool = False
+        x: int = 0
+        y: int = 0
+        while tries_left > 0 and is_successful is False:
+            tries_left -= 1
+            island_placement = IslandPlacement(
+                offset=discrete.CellCoord(x, y),
+                island=island
             )
+            collision_result = self._check_collision(island_placement)
+            if collision_result is CollisionResult.NO:
+                self.islands.append(island_placement)
+                self._write_island_to_mask(island_placement)
+                self._update_utilized_area(island_placement)
+                is_successful = True
+            elif collision_result is CollisionResult.YES:
+                # nothing to do here, let the solver decide.
+                if x + island.mask.width > self._mask.width:
+                    y += 1
+                else:
+                    x += 1
+            elif collision_result is CollisionResult.OUT_OF_BOUNDS:
+                # expand solution or try another offset
+                print("growing solution {!r}".format(self))
+                self._grow()
+            else:
+                raise NotImplementedError(
+                    "Unhandled collision result case '{0!r}'".format(
+                        collision_result
+                    )
+                )
+        return is_successful
 
     @property
     def scaling_factor(self) -> float:
@@ -118,6 +131,7 @@ class Solution:
 
 class GridPacker:
     SEED_MAX = 2 ** 31 - 1
+    OFFERS_MULTIPLIER = 5.0
 
     def __init__(
             self,
@@ -138,15 +152,19 @@ class GridPacker:
             return self._winner.fitness
 
     def run(self) -> None:
+        offers_left: int = int(len(self._islands) * self.OFFERS_MULTIPLIER)
         solution = Solution(self._initial_size,
                             self._rng.randint(0, self.SEED_MAX))
         islands = deque(self._islands)
-        while len(islands) > 0:
+        while len(islands) > 0 and offers_left > 0:
+            offers_left -= 1
             island = islands.popleft()
             # offer returns False when the island
             # is not accepted to the solution
             if not solution.offer(island):
                 islands.append(island)
+        # FIXME: It's possible that the solution is given up and not
+        #        all islands are placed.  Fail if that's the case.
         self._winner = solution
         print("Fitness: {0}".format(solution.fitness))
 
