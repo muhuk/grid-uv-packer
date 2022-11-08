@@ -79,7 +79,7 @@ class GridUVPackOperator(bpy.types.Operator):
         # TODO: Handle failure better.
         #       Ideally fitness should be better than the current
         #       UV configuration.
-        if packer.fitness > 50.0:
+        if packer.fitness > 0.50:
             packer.write(bm)
         bm.to_mesh(mesh)
         bm.free()

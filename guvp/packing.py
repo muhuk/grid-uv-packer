@@ -29,6 +29,7 @@ class Solution:
         self.islands: List[IslandPlacement] = []
         self._initial_size = initial_size
         self._rng = random.Random(random_seed)
+        self._search_start = discrete.CellCoord.zero()
         self._utilized_area = (0, 0)
         self._mask = discrete.Grid.empty(
             width=initial_size,
@@ -49,23 +50,47 @@ class Solution:
         # TODO: Make sure to reset retries after grow.
         island_retries_left: int = self.MAX_ISLAND_RETRIES_PER_GROW
         while len(islands_remaining) > 0 and island_retries_left > 0:
+            print("islands # = {} -- search_cell = {!r}".format(len(islands_remaining), self._search_start))
+            # self._mask.draw_str()
             island_retries_left -= 1
             placement_retries_left: int = min(
-                self._mask.width * self._mask.height / 10,
+                int(self._mask.width * self._mask.height / 5),
                 self.MAX_PLACEMENT_RETRIES
             )
-            # we try n times to place, after which we give up this island
-            # and try another island.
             island: continuous.Island = islands_remaining.popleft()
+            search_cell: discrete.CellCoord = self._search_start
             island_placement: Optional[IslandPlacement] = None
             while placement_retries_left > 0 and island_placement is None:
                 placement_retries_left -= 1
-                pass
+                island_placement = IslandPlacement(
+                    offset=search_cell,
+                    island=island
+                )
+                collision_result = self._check_collision(island_placement)
+                if collision_result is CollisionResult.NO:
+                    pass
+                elif collision_result is CollisionResult.YES:
+                    island_placement = None
+                elif collision_result is CollisionResult.OUT_OF_BOUNDS:
+                    island_placement = None
+                else:
+                    raise NotImplementedError(
+                        "Unhandled collision result case '{0!r}'".format(
+                            collision_result
+                        )
+                    )
+                if island_placement is None:
+                    new_search_cell = search_cell.offset(1, 0)
+                    if new_search_cell not in self._mask:
+                        new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
+                    search_cell = new_search_cell
             if island_placement is None:
                 islands_remaining.append(island)
-                # TODO: Grow if necessary
+                # TODO: Grow only if necessary
+                pass # self._grow()
             else:
                 island_retries_left += 1  # Refund
+                self._search_start = search_cell
                 self.islands.append(island_placement)
                 self._write_island_to_mask(island_placement)
                 self._update_utilized_area(island_placement)
@@ -106,7 +131,7 @@ class Solution:
                                     new_size - self._mask.height))
         self._mask = new_mask
         # No need to update utilized area.
-        pass
+        return None
 
     def _update_utilized_area(self, ip: IslandPlacement) -> None:
         (_, _, a, b) = ip.get_bounds()
@@ -146,12 +171,8 @@ class GridPacker:
         solution = Solution(self._initial_size,
                             self._rng.randint(0, self.SEED_MAX))
         result = solution.run(list(self._islands))
-        print(
-            "Solution result is {}".format("success" if result else "failure")
-        )
         # FIXME: It's possible that the solution is given up and not
         #        all islands are placed.  Fail if that's the case.
-        print("Fitness: {0}".format(solution.fitness))
         if result:
             self._winner = solution
 
@@ -160,7 +181,6 @@ class GridPacker:
             raise RuntimeError("write is called before run.")
         for ip in self._winner.islands:
             scaling_factor = self._winner.scaling_factor
-            print("scaling_factor is {}".format(scaling_factor))
             ip.write_uvs(bm, scaling_factor)
 
 

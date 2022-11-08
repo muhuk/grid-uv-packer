@@ -17,6 +17,9 @@ class CellCoord(NamedTuple):
     def zero(cls):
         return cls(0, 0)
 
+    def offset(self, dx: int, dy: int) -> CellCoord:
+        return CellCoord(self.x + dx, self.y + dy)
+
 
 class Grid:
     def __init__(self, cells: np.ndarray):
@@ -32,6 +35,10 @@ class Grid:
         if self.width != other.width or self.height != other.height:
             raise ValueError("Grids are not same sized.")
         return self.cells & other.cells
+
+    def __contains__(self, key: CellCoord):
+        (column, row) = key
+        return 0 <= column < self.width and 0 <= row < self.height
 
     def __delitem__(self, key: CellCoord):
         raise TypeError("'Grid' object does not support item deletion.")
@@ -66,10 +73,10 @@ class Grid:
         return Grid(cells)
 
     def draw_str(self) -> None:
-        MAX_DRAW_DIMENSION: int = 60
+        MAX_DRAW_DIMENSION: int = 100
         if self.width <= MAX_DRAW_DIMENSION and \
            self.height <= MAX_DRAW_DIMENSION:
-            for row in range(self.height):
+            for row in range(self.height-1, 0, -1):
                 print('<' if row == 0 else ' ', end='')
                 for column in range(self.width):
                     print('#' if self[CellCoord(column, row)] else '.', end='')

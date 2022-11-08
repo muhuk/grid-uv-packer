@@ -43,7 +43,6 @@ class Island:
             height=math.ceil(size.y / cell_size)
         )
         cls._fill_mask(bm, face_ids, offset, cell_size, mask)
-        print(mask)
         mask.draw_str()
         return cls(
             face_ids=face_ids,
@@ -118,10 +117,8 @@ class Island:
             ):
                 hit_cells: Set[discrete.CellCoord] = set()
                 for open_cell_id in open_cells:
-                    # We need to invert y-axis because UVs
-                    # use vertically increasing y-axis.
                     cell_x: int = open_cell_id[0]
-                    cell_y: int = mask.height - open_cell_id[1]
+                    cell_y: int = open_cell_id[1]
                     # triangulate the cell's quad.
                     x = float(offset.x + cell_x * cell_size)
                     y = float(offset.y + cell_y * cell_size)
