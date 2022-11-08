@@ -39,8 +39,6 @@ class GridUVPackOperator(bpy.types.Operator):
         name="Grid Size",               # noqa: F722
         default="128",
         items=(
-            # TODO: Remove 16 option, it is for debugging.
-            ("16", "16", "", 'NONE', 16),     # noqa: F722,F821
             ("64", "64", "", 'NONE', 64),     # noqa: F722,F821
             ("128", "128", "", 'NONE', 128),  # noqa: F722,F821
             ("256", "256", "", 'NONE', 256),  # noqa: F722,F821
@@ -78,7 +76,11 @@ class GridUVPackOperator(bpy.types.Operator):
         )
         packer.run()
         print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
-        packer.write(bm)
+        # TODO: Handle failure better.
+        #       Ideally fitness should be better than the current
+        #       UV configuration.
+        if packer.fitness > 50.0:
+            packer.write(bm)
         bm.to_mesh(mesh)
         bm.free()
         # Back into EDIT mode.
