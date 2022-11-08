@@ -17,7 +17,8 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 class Solution:
     MAX_GROW_COUNT = 2
-    MAX_TRIES_PER_OFFER = 100    # Hard limit for tries
+    MAX_ISLAND_RETRIES_PER_GROW = 100   # Hard limit for tries
+    MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
 
     """Store a set of placements."""
     def __init__(
@@ -41,45 +42,35 @@ class Solution:
         # Don't forget to add 1 to the end index.
         ones = np.count_nonzero(self._mask.cells[0:size + 1, 0:size + 1])
         # TODO: use a function on Grid instead of accessing cells directly.
-        return float(ones) / (size * size)
+        return float(ones) / (size * size) if size > 0 else 0.0
 
-    def offer(self, island: continuous.Island) -> bool:
-        tries_left: int = min(
-            self._mask.width * self._mask.height / 3,
-            self.MAX_TRIES_PER_OFFER
-        )
-        is_successful: bool = False
-        x: int = 0
-        y: int = 0
-        while tries_left > 0 and is_successful is False:
-            tries_left -= 1
-            island_placement = IslandPlacement(
-                offset=discrete.CellCoord(x, y),
-                island=island
+    def run(self, islands_to_place: List[continuous.Island]) -> bool:
+        islands_remaining = deque(islands_to_place)
+        # TODO: Make sure to reset retries after grow.
+        island_retries_left: int = self.MAX_ISLAND_RETRIES_PER_GROW
+        while len(islands_remaining) > 0 and island_retries_left > 0:
+            island_retries_left -= 1
+            placement_retries_left: int = min(
+                self._mask.width * self._mask.height / 10,
+                self.MAX_PLACEMENT_RETRIES
             )
-            collision_result = self._check_collision(island_placement)
-            if collision_result is CollisionResult.NO:
+            # we try n times to place, after which we give up this island
+            # and try another island.
+            island: continuous.Island = islands_remaining.popleft()
+            island_placement: Optional[IslandPlacement] = None
+            while placement_retries_left > 0 and island_placement is None:
+                placement_retries_left -= 1
+                pass
+            if island_placement is None:
+                islands_remaining.append(island)
+                # TODO: Grow if necessary
+            else:
+                island_retries_left += 1  # Refund
                 self.islands.append(island_placement)
                 self._write_island_to_mask(island_placement)
                 self._update_utilized_area(island_placement)
-                is_successful = True
-            elif collision_result is CollisionResult.YES:
-                # nothing to do here, let the solver decide.
-                if x + island.mask.width > self._mask.width:
-                    y += 1
-                else:
-                    x += 1
-            elif collision_result is CollisionResult.OUT_OF_BOUNDS:
-                # expand solution or try another offset
-                print("growing solution {!r}".format(self))
-                self._grow()
-            else:
-                raise NotImplementedError(
-                    "Unhandled collision result case '{0!r}'".format(
-                        collision_result
-                    )
-                )
-        return is_successful
+        # Run is successful if all the islands are placed.
+        return len(islands_remaining) == 0
 
     @property
     def scaling_factor(self) -> float:
@@ -152,21 +143,17 @@ class GridPacker:
             return self._winner.fitness
 
     def run(self) -> None:
-        offers_left: int = int(len(self._islands) * self.OFFERS_MULTIPLIER)
         solution = Solution(self._initial_size,
                             self._rng.randint(0, self.SEED_MAX))
-        islands = deque(self._islands)
-        while len(islands) > 0 and offers_left > 0:
-            offers_left -= 1
-            island = islands.popleft()
-            # offer returns False when the island
-            # is not accepted to the solution
-            if not solution.offer(island):
-                islands.append(island)
+        result = solution.run(list(self._islands))
+        print(
+            "Solution result is {}".format("success" if result else "failure")
+        )
         # FIXME: It's possible that the solution is given up and not
         #        all islands are placed.  Fail if that's the case.
-        self._winner = solution
         print("Fitness: {0}".format(solution.fitness))
+        if result:
+            self._winner = solution
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
