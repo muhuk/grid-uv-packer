@@ -18,6 +18,7 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 class Solution:
     MAX_GROW_COUNT = 2
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
+    SEARCH_START_RESET_CHANCE = 0.1
 
     """Store a set of placements."""
     def __init__(
@@ -90,6 +91,8 @@ class Solution:
                 self.islands.append(island_placement)
                 self._write_island_to_mask(island_placement)
                 self._update_utilized_area(island_placement)
+            if self._rng.random() <= self.SEARCH_START_RESET_CHANCE:
+                self._search_start = discrete.CellCoord.zero()
         # Run is successful if all the islands are placed.
         return len(islands_remaining) == 0
 
