@@ -47,6 +47,7 @@ class Solution:
 
     def run(self, islands_to_place: List[continuous.Island]) -> bool:
         islands_remaining = deque(islands_to_place)
+        self._rng.shuffle(islands_remaining)
         # TODO: Make sure to reset retries after grow.
         island_retries_left: int = self.MAX_ISLAND_RETRIES_PER_GROW
         while len(islands_remaining) > 0 and island_retries_left > 0:
