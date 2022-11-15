@@ -17,7 +17,6 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 class Solution:
     MAX_GROW_COUNT = 2
-    MAX_ISLAND_RETRIES_PER_GROW = 100   # Hard limit for tries
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
 
     """Store a set of placements."""
@@ -47,21 +46,19 @@ class Solution:
 
     def run(self, islands_to_place: List[continuous.Island]) -> bool:
         islands_remaining = deque(islands_to_place)
+        del islands_to_place
         self._rng.shuffle(islands_remaining)
-        # TODO: Make sure to reset retries after grow.
-        island_retries_left: int = self.MAX_ISLAND_RETRIES_PER_GROW
+        island_retries_left: int = len(islands_remaining)
         while len(islands_remaining) > 0 and island_retries_left > 0:
             print("island = {} -- islands # = {} -- search_cell = {!r}".format(id(islands_remaining[0]), len(islands_remaining), self._search_start))
             # self._mask.draw_str()
             island_retries_left -= 1
-            placement_retries_left: int = min(
-                int(self._mask.width * self._mask.height / 5),
-                self.MAX_PLACEMENT_RETRIES
-            )
+            placement_retries_left: int = self.MAX_PLACEMENT_RETRIES
             island: continuous.Island = islands_remaining.popleft()
             search_cell: discrete.CellCoord = self._search_start
             island_placement: Optional[IslandPlacement] = None
             while placement_retries_left > 0 and island_placement is None:
+                print("search_cell = {} -- placement_retries_left = {}".format(search_cell, placement_retries_left))
                 placement_retries_left -= 1
                 island_placement = IslandPlacement(
                     offset=search_cell,
@@ -87,7 +84,8 @@ class Solution:
                 # TODO: Grow only if necessary
                 pass # self._grow()
             else:
-                island_retries_left += 1  # Refund
+                # Note that `island` was removed from `islands_remaining`.
+                island_retries_left = len(islands_remaining)
                 self._search_start = search_cell
                 self.islands.append(island_placement)
                 self._write_island_to_mask(island_placement)
