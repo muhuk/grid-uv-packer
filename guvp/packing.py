@@ -16,6 +16,8 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
 class Solution:
+    GROW_AREA_CHANCE = 0.5          # Grow chance if utilized area is too big.
+    GROW_AREA_RATIO = 0.85          # Grow if utilized area is larger than this.
     MAX_GROW_COUNT = 2
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
     SEARCH_START_RESET_CHANCE = 0.1
@@ -51,7 +53,6 @@ class Solution:
         self._rng.shuffle(islands_remaining)
         island_retries_left: int = len(islands_remaining)
         while len(islands_remaining) > 0 and island_retries_left > 0:
-            print("island = {} -- islands # = {} -- search_cell = {!r}".format(id(islands_remaining[0]), len(islands_remaining), self._search_start))
             # self._mask.draw_str()
             island_retries_left -= 1
             placement_retries_left: int = self.MAX_PLACEMENT_RETRIES
@@ -59,7 +60,6 @@ class Solution:
             search_cell: discrete.CellCoord = self._search_start
             island_placement: Optional[IslandPlacement] = None
             while placement_retries_left > 0 and island_placement is None:
-                print("search_cell = {} -- placement_retries_left = {}".format(search_cell, placement_retries_left))
                 placement_retries_left -= 1
                 island_placement = IslandPlacement(
                     offset=search_cell,
@@ -82,8 +82,11 @@ class Solution:
                     search_cell = self._advance_search_cell(search_cell)
             if island_placement is None:
                 islands_remaining.append(island)
-                # TODO: Grow only if necessary
-                pass # self._grow()
+                # Grow if utilized area gets too large.
+                if float(self._utilized_area[0]) / self._mask.width > self.GROW_AREA_RATIO or \
+                   float(self._utilized_area[1]) / self._mask.height > self.GROW_AREA_RATIO:
+                    if self._rng.random() <= self.GROW_AREA_CHANCE:
+                        self._grow()
             else:
                 # Note that `island` was removed from `islands_remaining`.
                 island_retries_left = len(islands_remaining)
