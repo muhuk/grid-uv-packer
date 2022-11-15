@@ -51,7 +51,7 @@ class Solution:
         # TODO: Make sure to reset retries after grow.
         island_retries_left: int = self.MAX_ISLAND_RETRIES_PER_GROW
         while len(islands_remaining) > 0 and island_retries_left > 0:
-            print("islands # = {} -- search_cell = {!r}".format(len(islands_remaining), self._search_start))
+            print("island = {} -- islands # = {} -- search_cell = {!r}".format(id(islands_remaining[0]), len(islands_remaining), self._search_start))
             # self._mask.draw_str()
             island_retries_left -= 1
             placement_retries_left: int = min(
@@ -81,10 +81,7 @@ class Solution:
                         )
                     )
                 if island_placement is None:
-                    new_search_cell = search_cell.offset(1, 0)
-                    if new_search_cell not in self._mask:
-                        new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
-                    search_cell = new_search_cell
+                    search_cell = self._advance_search_cell(search_cell)
             if island_placement is None:
                 islands_remaining.append(island)
                 # TODO: Grow only if necessary
@@ -102,6 +99,12 @@ class Solution:
     def scaling_factor(self) -> float:
         return float(self._initial_size) / max(self._utilized_area[0],
                                                self._utilized_area[1])
+
+    def _advance_search_cell(self, search_cell: discrete.CellCoord) -> discrete.CellCoord:
+        new_search_cell = search_cell.offset(1, 0)
+        if new_search_cell not in self._mask:
+            new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
+        return new_search_cell
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
         island_bounds = ip.get_bounds()
