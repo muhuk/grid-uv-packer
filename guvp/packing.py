@@ -18,6 +18,8 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 class Solution:
     GROW_AREA_CHANCE = 0.5          # Grow chance if utilized area is too big.
     GROW_AREA_RATIO = 0.85          # Grow if utilized area is larger than this.
+    GROW_REGULARITY_CHANCE = 0.5    # Grow change if the utilized area is closer to a rectangle.
+    GROW_REGULARITY_RATIO = 0.667   # What is the threshold to consider a rectangle-like fill.
     MAX_GROW_COUNT = 2
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
     SEARCH_START_RESET_CHANCE = 0.1
@@ -82,11 +84,22 @@ class Solution:
                     search_cell = self._advance_search_cell(search_cell)
             if island_placement is None:
                 islands_remaining.append(island)
-                # Grow if utilized area gets too large.
+                should_grow: bool = False
+                # Grow if utilized area gets too large compared to current mask size.
                 if float(self._utilized_area[0]) / self._mask.width > self.GROW_AREA_RATIO or \
                    float(self._utilized_area[1]) / self._mask.height > self.GROW_AREA_RATIO:
                     if self._rng.random() <= self.GROW_AREA_CHANCE:
-                        self._grow()
+                        should_grow = True
+                # Grow if utilized area is rectangular.
+                if should_grow is False:
+                    ratio: float = float(self._utilized_area[0]) / float(self._utilized_area[1])
+                    if ratio > 1.0:
+                        ratio = 1.0 / ratio
+                    if ratio >= self.GROW_REGULARITY_RATIO:
+                        if self._rng.random() <= self.GROW_REGULARITY_CHANCE:
+                            should_grow = True
+                if should_grow:
+                    self._grow()
             else:
                 # Note that `island` was removed from `islands_remaining`.
                 island_retries_left = len(islands_remaining)
@@ -96,6 +109,7 @@ class Solution:
                 self._update_utilized_area(island_placement)
             if self._rng.random() <= self.SEARCH_START_RESET_CHANCE:
                 self._search_start = discrete.CellCoord.zero()
+        print("Solution {} -- remaining islands # = {}".format(id(self), len(islands_remaining)))
         # Run is successful if all the islands are placed.
         return len(islands_remaining) == 0
 
@@ -132,6 +146,7 @@ class Solution:
         if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
             print("Cannot grow more.")
             return None
+        print("Growing")
         # Create a mask with the new size & copy current mask's contents.
         new_size = self._mask.width * 2
         new_mask = self._mask.copy((0,

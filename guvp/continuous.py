@@ -43,7 +43,7 @@ class Island:
             height=math.ceil(size.y / cell_size)
         )
         cls._fill_mask(bm, face_ids, offset, cell_size, mask)
-        mask.draw_str()
+        # mask.draw_str()
         return cls(
             face_ids=face_ids,
             uvs=uvs,
