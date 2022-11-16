@@ -130,7 +130,8 @@ class Solution:
     def _grow(self) -> None:
         # Limit growing.
         if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
-            raise RuntimeError("solution cannot grow more")
+            print("Cannot grow more.")
+            return None
         # Create a mask with the new size & copy current mask's contents.
         new_size = self._mask.width * 2
         new_mask = self._mask.copy((0,
