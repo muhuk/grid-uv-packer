@@ -18,7 +18,8 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 class Solution:
     GROW_AREA_CHANCE = 0.5          # Grow chance if utilized area is too big.
     GROW_AREA_RATIO = 0.85          # Grow if utilized area is larger than this.
-    GROW_REGULARITY_CHANCE = 0.5    # Grow change if the utilized area is closer to a rectangle.
+    GROW_BASE_CHANCE = 0.15         # Base grow chance without modifiers
+    GROW_REGULARITY_CHANCE = -0.25  # Grow change if the utilized area is closer to a rectangle.
     GROW_REGULARITY_RATIO = 0.667   # What is the threshold to consider a rectangle-like fill.
     MAX_GROW_COUNT = 2
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
@@ -84,21 +85,7 @@ class Solution:
                     search_cell = self._advance_search_cell(search_cell)
             if island_placement is None:
                 islands_remaining.append(island)
-                should_grow: bool = False
-                # Grow if utilized area gets too large compared to current mask size.
-                if float(self._utilized_area[0]) / self._mask.width > self.GROW_AREA_RATIO or \
-                   float(self._utilized_area[1]) / self._mask.height > self.GROW_AREA_RATIO:
-                    if self._rng.random() <= self.GROW_AREA_CHANCE:
-                        should_grow = True
-                # Grow if utilized area is rectangular.
-                if should_grow is False:
-                    ratio: float = float(self._utilized_area[0]) / float(self._utilized_area[1])
-                    if ratio > 1.0:
-                        ratio = 1.0 / ratio
-                    if ratio >= self.GROW_REGULARITY_RATIO:
-                        if self._rng.random() <= self.GROW_REGULARITY_CHANCE:
-                            should_grow = True
-                if should_grow:
+                if self._rng.random() <= self._calculate_grow_chance():
                     self._grow()
             else:
                 # Note that `island` was removed from `islands_remaining`.
@@ -123,6 +110,22 @@ class Solution:
         if new_search_cell not in self._mask:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
         return new_search_cell
+
+
+    def _calculate_grow_chance(self) -> float:
+        grow_chance: float = self.GROW_BASE_CHANCE
+        # Grow if utilized area gets too large compared to current mask size.
+        if float(self._utilized_area[0]) / self._mask.width > self.GROW_AREA_RATIO or \
+           float(self._utilized_area[1]) / self._mask.height > self.GROW_AREA_RATIO:
+            grow_chance += self.GROW_AREA_CHANCE
+        # Grow only if utilized area is rectangular.
+        ratio: float = float(self._utilized_area[0]) / float(self._utilized_area[1])
+        if ratio > 1.0:
+            ratio = 1.0 / ratio
+        if ratio <= self.GROW_REGULARITY_RATIO:
+            grow_chance += self.GROW_REGULARITY_CHANCE
+        del ratio
+        return max(0.0, min(grow_chance, 1.0))
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
         island_bounds = ip.get_bounds()
