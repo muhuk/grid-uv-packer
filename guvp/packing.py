@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import (dataclass, field, InitVar)
 import enum
+import math
 import random
 from typing import (List, Tuple, Optional)
 import weakref
@@ -23,7 +24,7 @@ class Solution:
     GROW_REGULARITY_RATIO = 0.667   # What is the threshold to consider a rectangle-like fill.
     MAX_GROW_COUNT = 2
     MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
-    SEARCH_START_RESET_CHANCE = 0.1
+    SEARCH_START_RESET_CHANCE = 0.333
 
     """Store a set of placements."""
     def __init__(
@@ -106,8 +107,12 @@ class Solution:
                                                self._utilized_area[1])
 
     def _advance_search_cell(self, search_cell: discrete.CellCoord) -> discrete.CellCoord:
+        x: float = float(search_cell[0]) / (self._mask.width - 1)
+        y: float = float(search_cell[1]) / (self._mask.height - 1)
+        up_chance: float = math.sin(x ** 3 * math.pi * 0.5) \
+                         * math.cos(y ** 2 * math.pi * 0.5)
         new_search_cell = search_cell.offset(1, 0)
-        if new_search_cell not in self._mask:
+        if self._rng.random() <= up_chance or new_search_cell not in self._mask:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
         return new_search_cell
 
