@@ -4,6 +4,7 @@ from dataclasses import (dataclass, field, InitVar)
 import enum
 import math
 import random
+import statistics
 from typing import (List, Tuple, Optional)
 import weakref
 
@@ -55,6 +56,8 @@ class Solution:
         islands_remaining = deque(islands_to_place)
         del islands_to_place
         self._rng.shuffle(islands_remaining)
+        # We need to reset search cell here since pack may be called several times.
+        self._search_start = discrete.CellCoord.zero()
         island_retries_left: int = len(islands_remaining)
         while len(islands_remaining) > 0 and island_retries_left > 0:
             # self._mask.draw_str()
@@ -202,7 +205,8 @@ class GridPacker:
     def run(self) -> None:
         solution = Solution(self._initial_size,
                             self._rng.randint(0, self.SEED_MAX))
-        result = solution.pack(list(self._islands))
+        (large_islands, small_islands) = self._categorize_islands()
+        result = solution.pack(large_islands) and solution.pack(small_islands)
         # FIXME: It's possible that the solution is given up and not
         #        all islands are placed.  Fail if that's the case.
         if result:
@@ -214,6 +218,13 @@ class GridPacker:
         for ip in self._winner.islands:
             scaling_factor = self._winner.scaling_factor
             ip.write_uvs(bm, scaling_factor)
+
+    def _categorize_islands(self) -> Tuple[List[continuous.Island], List[continuous.Island]]:
+        island_sizes: List[int] = sorted([len(i.mask) for i in self._islands])
+        median_size: int = statistics.median_low(island_sizes)
+        large_islands = [i for i in self._islands if len(i.mask) > median_size]
+        small_islands = [i for i in self._islands if len(i.mask) <= median_size]
+        return (large_islands, small_islands)
 
 
 @dataclass(frozen=True)
