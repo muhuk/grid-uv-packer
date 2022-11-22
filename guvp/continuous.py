@@ -5,6 +5,7 @@ from typing import (
     Dict,
     List,
     Set,
+    Tuple,
     Type
 )
 
@@ -15,7 +16,7 @@ import mathutils.geometry     # type: ignore
 from guvp import discrete
 
 
-FaceUVs = Dict[int, Vector]
+FaceUVs = Dict[int, Tuple[float, float]]
 
 
 # face id -> (face loop id -> UV)
@@ -62,7 +63,7 @@ class Island:
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
                 assert(face_loop.index in self.uvs[face_id])
-                face_loop[uv_ident].uv = self.uvs[face_id][face_loop.index]
+                face_loop[uv_ident].uv = Vector(self.uvs[face_id][face_loop.index])
                 face_loop[uv_ident].uv += offset_vec
                 face_loop[uv_ident].uv *= scaling_factor
 
@@ -78,10 +79,10 @@ class Island:
         for face_id in face_ids:
             face_uvs: FaceUVs = {}
             for face_loop in bm.faces[face_id].loops:
-                # Store UV
-                face_uvs[face_loop.index] = face_loop[uv_ident].uv
-                # Update UV bounds
                 (u, v) = face_loop[uv_ident].uv
+                # Store UV
+                face_uvs[face_loop.index] = (u, v)
+                # Update UV bounds
                 u_min = min(u, u_min)
                 v_min = min(v, v_min)
                 u_max = max(u, u_max)
@@ -91,8 +92,10 @@ class Island:
         size = Vector((u_max - u_min, v_max - v_min))
         # Offset everything by (-u_min, -v_min)
         offset = Vector((u_min, v_min))
-        uvs = {k: {loop_id: uv - offset for loop_id, uv in fuv.items()}
-               for k, fuv in uvs.items()}
+        for k, fuv in uvs.items():
+            for loop_id, uv in fuv.items():
+                (new_u, new_v) = Vector(uv) - offset
+                uvs[k][loop_id] = (new_u, new_v)
         return (uvs, size, offset)
 
     @staticmethod

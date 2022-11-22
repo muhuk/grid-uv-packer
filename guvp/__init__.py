@@ -72,7 +72,8 @@ class GridUVPackOperator(bpy.types.Operator):
             islands=[
                 continuous.Island.from_faces(bm, face_ids, cell_size)
                 for face_ids in self._island_face_ids(mesh)
-            ]
+            ],
+            random_seed=12345
         )
         packer.run()
         print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))

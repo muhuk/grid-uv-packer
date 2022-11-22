@@ -1,12 +1,13 @@
 from __future__ import annotations
 from collections import deque
+from concurrent import futures
 from dataclasses import (dataclass, field, InitVar)
 import enum
+import itertools
 import math
 import random
 import statistics
 from typing import (List, Tuple, Optional)
-import weakref
 
 import bmesh                  # type: ignore
 import numpy as np            # type: ignore
@@ -34,6 +35,7 @@ class Solution:
             random_seed: int
     ) -> None:
         self.islands: List[IslandPlacement] = []
+        self.random_seed = random_seed
         self._initial_size = initial_size
         self._rng = random.Random(random_seed)
         self._search_start = discrete.CellCoord.zero()
@@ -100,9 +102,17 @@ class Solution:
                 self._update_utilized_area(island_placement)
             if self._rng.random() <= self.SEARCH_START_RESET_CHANCE:
                 self._search_start = discrete.CellCoord.zero()
-        print("Solution {} -- remaining islands # = {}".format(id(self), len(islands_remaining)))
         # Run is successful if all the islands are placed.
         return len(islands_remaining) == 0
+
+    def pack_grouped(self, *grouped_islands: List[continuous.Island]) -> bool:
+        result: bool = True
+        group_idx: int = 0
+        while result and group_idx < len(grouped_islands):
+            if not self.pack(grouped_islands[group_idx]):
+                result = False
+            group_idx += 1
+        return result
 
     @property
     def scaling_factor(self) -> float:
@@ -203,14 +213,24 @@ class GridPacker:
             return self._winner.fitness
 
     def run(self) -> None:
-        solution = Solution(self._initial_size,
-                            self._rng.randint(0, self.SEED_MAX))
         (large_islands, small_islands) = self._categorize_islands()
-        result = solution.pack(large_islands) and solution.pack(small_islands)
-        # FIXME: It's possible that the solution is given up and not
-        #        all islands are placed.  Fail if that's the case.
-        if result:
-            self._winner = solution
+        executor: futures.Executor = futures.ProcessPoolExecutor()
+        # TODO: Handle exceptions raised in workers.
+        # TODO: Add execution timeout.
+        n: int = 10
+        results = executor.map(
+            self._run_solution,
+            itertools.repeat(self._initial_size),
+            [self._rng.randint(0, self.SEED_MAX) for _ in range(n)],
+            itertools.repeat(large_islands),
+            itertools.repeat(small_islands)
+        )
+        executor.shutdown()
+        highest_fitness: float = 0.0
+        for (result, solution) in results:
+            if result and solution.fitness > highest_fitness:
+                highest_fitness = solution.fitness
+                self._winner = solution
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
@@ -226,6 +246,11 @@ class GridPacker:
         small_islands = [i for i in self._islands if len(i.mask) <= median_size]
         return (large_islands, small_islands)
 
+    @staticmethod
+    def _run_solution(initial_size: int, seed: int, *grouped_islands: List[continuous.Island]) -> Tuple[bool, Solution]:
+        solution: Solution = Solution(initial_size, seed)
+        return solution.pack_grouped(*grouped_islands), solution
+
 
 @dataclass(frozen=True)
 class IslandPlacement:
@@ -234,33 +259,21 @@ class IslandPlacement:
     # rotation: Enum
     #
     #   see: https://docs.python.org/3/library/enum.html
-    island: InitVar[continuous.Island]
-    _island_ref: weakref.ReferenceType[continuous.Island] = field(init=False)
-
-    def __post_init__(self, island) -> None:
-        assert(island is not None)
-        object.__setattr__(self, "_island_ref", weakref.ref(island))
+    island: continuous.Island
 
     def get_bounds(self) -> Tuple[int, int, int, int]:
         return (self.offset.x,
                 self.offset.y,
-                self.offset.x + self._island.mask.width,
-                self.offset.y + self._island.mask.height)
+                self.offset.x + self.island.mask.width,
+                self.offset.y + self.island.mask.height)
 
     def get_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
-        return self._island.mask.copy(
+        return self.island.mask.copy(
             (self.offset.x,
              self.offset.y,
-             bounds[0] - (self.offset.x + self._island.mask.width),
-             bounds[1] - (self.offset.y + self._island.mask.height))
+             bounds[0] - (self.offset.x + self.island.mask.width),
+             bounds[1] - (self.offset.y + self.island.mask.height))
         )
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
-        self._island.write_uvs(bm, self.offset, scaling_factor)
-
-    @property
-    def _island(self) -> continuous.Island:
-        island = self._island_ref()
-        if island is None:
-            raise RuntimeError("island cannot be dereferenced.")
-        return island
+        self.island.write_uvs(bm, self.offset, scaling_factor)
