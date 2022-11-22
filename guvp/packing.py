@@ -51,7 +51,7 @@ class Solution:
         # TODO: use a function on Grid instead of accessing cells directly.
         return float(ones) / (size * size) if size > 0 else 0.0
 
-    def run(self, islands_to_place: List[continuous.Island]) -> bool:
+    def pack(self, islands_to_place: List[continuous.Island]) -> bool:
         islands_remaining = deque(islands_to_place)
         del islands_to_place
         self._rng.shuffle(islands_remaining)
@@ -202,7 +202,7 @@ class GridPacker:
     def run(self) -> None:
         solution = Solution(self._initial_size,
                             self._rng.randint(0, self.SEED_MAX))
-        result = solution.run(list(self._islands))
+        result = solution.pack(list(self._islands))
         # FIXME: It's possible that the solution is given up and not
         #        all islands are placed.  Fail if that's the case.
         if result:
