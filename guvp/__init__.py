@@ -21,18 +21,24 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [continuous, discrete, packing, props]:  # noqa: F821
+    for mod in [continuous, debug, discrete, packing, props]:  # noqa: F821
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
     # stdlib
     from typing import (Iterable, Set)
     # blender
-    import bpy         # type: ignore
-    import bpy_extras  # type: ignore
-    import bmesh       # type: ignore
+    import bpy          # type: ignore
+    import bpy_extras   # type: ignore
+    import bmesh        # type: ignore
     # addon
-    from guvp import (continuous, discrete, packing, props)  # noqa: F401
+    from guvp import (  # noqa: F401
+        continuous,
+        debug,
+        discrete,
+        packing,
+        props
+    )
 
 
 bl_info = {
@@ -72,7 +78,7 @@ class GridUVPackOperator(bpy.types.Operator):
             context.mode == 'EDIT_MESH'
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        assert(context.mode == 'EDIT_MESH')
+        assert context.mode == 'EDIT_MESH'
         # Get out of EDIT mode.
         bpy.ops.object.editmode_toggle()
         # We ignore the type of self.grid_size for bpy reasons.
@@ -95,7 +101,8 @@ class GridUVPackOperator(bpy.types.Operator):
             random_seed=12345
         )
         packer.run()
-        print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
+        if debug.is_debug():
+            print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
         # TODO: Handle failure better.
         #       Ideally fitness should be better than the current
         #       UV configuration.

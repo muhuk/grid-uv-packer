@@ -31,7 +31,7 @@ from typing import (List, Tuple, Optional)
 import bmesh                  # type: ignore
 import numpy as np            # type: ignore
 
-from guvp import (continuous, discrete)
+from guvp import (continuous, debug, discrete)
 
 
 CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
@@ -184,9 +184,11 @@ class Solution:
     def _grow(self) -> None:
         # Limit growing.
         if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
-            print("Cannot grow more.")
+            if debug.is_debug():
+                print("Cannot grow more.")
             return None
-        print("Growing")
+        if debug.is_debug():
+            print("Growing")
         # Create a mask with the new size & copy current mask's contents.
         new_size = self._mask.width * 2
         new_mask = self._mask.copy((0,
