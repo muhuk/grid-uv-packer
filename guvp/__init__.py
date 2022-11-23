@@ -21,7 +21,7 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [continuous, discrete, packing]:  # noqa: F821
+    for mod in [continuous, discrete, packing, props]:  # noqa: F821
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
@@ -32,7 +32,7 @@ else:
     import bpy_extras  # type: ignore
     import bmesh       # type: ignore
     # addon
-    from guvp import (continuous, discrete, packing)  # noqa: F401
+    from guvp import (continuous, discrete, packing, props)  # noqa: F401
 
 
 bl_info = {
@@ -128,15 +128,27 @@ def menu_draw(self, _context):
 
 
 def register():
+    # Register props
+    bpy.utils.register_class(props.GridUVPackerAddonPreferences)
+
+    # Register operations
     bpy.utils.register_class(GridUVPackOperator)
+
+    # Register UI
     bpy.types.VIEW3D_MT_uv_map.append(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.append(menu_draw)
 
 
 def unregister():
+    # Unregister UI
     bpy.types.VIEW3D_MT_uv_map.remove(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.remove(menu_draw)
+
+    # Unregister operations
     bpy.utils.unregister_class(GridUVPackOperator)
+
+    # Unregister props
+    bpy.utils.unregister_class(props.GridUVPackerAddonPreferences)
 
 
 if __name__ == "__main__":
