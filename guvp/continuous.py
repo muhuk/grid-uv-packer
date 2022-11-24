@@ -62,7 +62,7 @@ class Island:
             width=math.ceil(size.x / cell_size),
             height=math.ceil(size.y / cell_size)
         )
-        cls._fill_mask(bm, face_ids, offset, cell_size, mask)
+        fill_mask(bm, face_ids, offset, cell_size, mask)
         # mask.draw_str()
         return cls(
             face_ids=face_ids,
@@ -81,7 +81,7 @@ class Island:
         offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
-                assert(face_loop.index in self.uvs[face_id])
+                assert face_loop.index in self.uvs[face_id]
                 face_loop[uv_ident].uv = Vector(self.uvs[face_id][face_loop.index])
                 face_loop[uv_ident].uv += offset_vec
                 face_loop[uv_ident].uv *= scaling_factor
@@ -116,46 +116,6 @@ class Island:
                 (new_u, new_v) = Vector(uv) - offset
                 uvs[k][loop_id] = (new_u, new_v)
         return (uvs, size, offset)
-
-    @staticmethod
-    def _fill_mask(
-            bm: bmesh.types.BMesh,
-            face_ids: set[int],
-            offset: Vector,
-            cell_size: float,
-            mask: discrete.Grid
-    ):
-        open_cells: Set[discrete.CellCoord] = set(mask)
-        uv_ident = bm.loops.layers.uv.verify()
-
-        for face_id in face_ids:
-            loop_uvs = [face_loop[uv_ident].uv
-                        for face_loop in bm.faces[face_id].loops]
-            # When we use triangulate, we are assuming the face,
-            # when it is an n-gon, is convex.  There is basically no way
-            # to triangulate a concave n-gon without triangulating it first.
-            for face_tri in Triangle2D.triangulate(
-                [(u, v) for (u, v) in loop_uvs]
-            ):
-                hit_cells: Set[discrete.CellCoord] = set()
-                for open_cell_id in open_cells:
-                    cell_x: int = open_cell_id[0]
-                    cell_y: int = open_cell_id[1]
-                    # triangulate the cell's quad.
-                    x = float(offset.x + cell_x * cell_size)
-                    y = float(offset.y + cell_y * cell_size)
-                    grid_tris = Triangle2D.triangulate([
-                        Vector((x, y)),
-                        Vector((x, y + cell_size)),
-                        Vector((x + cell_size, y + cell_size)),
-                        Vector((x + cell_size, y))
-                    ])
-                    for grid_tri in grid_tris:
-                        if grid_tri.intersect(face_tri):
-                            hit_cells.add(open_cell_id)
-                            mask[open_cell_id] = True
-                            break
-                open_cells -= hit_cells
 
 
 class Triangle2D:
@@ -192,7 +152,47 @@ class Triangle2D:
         (t_verts, _, t_faces, _, _, _) = delanuay_result
         result: List[Triangle2D] = []
         for vert_ids in t_faces:
-            assert(len(vert_ids) == 3)
+            assert len(vert_ids) == 3
             verts = [t_verts[vert_id] for vert_id in vert_ids]
             result.append(cls(verts[0], verts[1], verts[2]))
         return result
+
+
+def fill_mask(
+        bm: bmesh.types.BMesh,
+        face_ids: set[int],
+        offset: Vector,
+        cell_size: float,
+        mask: discrete.Grid
+):
+    open_cells: Set[discrete.CellCoord] = set(mask)
+    uv_ident = bm.loops.layers.uv.verify()
+
+    for face_id in face_ids:
+        loop_uvs = [face_loop[uv_ident].uv
+                    for face_loop in bm.faces[face_id].loops]
+        # When we use triangulate, we are assuming the face,
+        # when it is an n-gon, is convex.  There is basically no way
+        # to triangulate a concave n-gon without triangulating it first.
+        for face_tri in Triangle2D.triangulate(
+                [(u, v) for (u, v) in loop_uvs]
+        ):
+            hit_cells: Set[discrete.CellCoord] = set()
+            for open_cell_id in open_cells:
+                cell_x: int = open_cell_id[0]
+                cell_y: int = open_cell_id[1]
+                # triangulate the cell's quad.
+                x = float(offset.x + cell_x * cell_size)
+                y = float(offset.y + cell_y * cell_size)
+                grid_tris = Triangle2D.triangulate([
+                    Vector((x, y)),
+                    Vector((x, y + cell_size)),
+                    Vector((x + cell_size, y + cell_size)),
+                    Vector((x + cell_size, y))
+                ])
+                for grid_tri in grid_tris:
+                    if grid_tri.intersect(face_tri):
+                        hit_cells.add(open_cell_id)
+                        mask[open_cell_id] = True
+                        break
+            open_cells -= hit_cells
