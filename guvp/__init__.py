@@ -26,11 +26,14 @@ if "bpy" in locals():
         importlib.reload(mod)
 else:
     # stdlib
-    from typing import (Iterable, Set)
+    from functools import reduce
+    from typing import (Iterable, List, Set)
     # blender
-    import bpy          # type: ignore
-    import bpy_extras   # type: ignore
-    import bmesh        # type: ignore
+    import bpy                    # type: ignore
+    import bpy_extras             # type: ignore
+    import bmesh                  # type: ignore
+    from mathutils import Vector  # type: ignore
+    import numpy as np            # type: ignore
     # addon
     from guvp import (  # noqa: F401
         continuous,
@@ -93,17 +96,29 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
+        # Calculate fitness of the input UVs.
+        island_face_ids: List[set[int]] = self._island_face_ids(mesh)
+        baseline_fitness: float = self._calculate_baseline_fitness(
+            bm,
+            grid_size,
+            reduce(lambda a, b: set(a) | b, island_face_ids, set())
+        )
         packer = packing.GridPacker(
             initial_size=grid_size,
             islands=[
                 continuous.Island.from_faces(bm, face_ids, cell_size)
-                for face_ids in self._island_face_ids(mesh)
+                for face_ids in island_face_ids
             ],
             random_seed=12345
         )
         packer.run()
         if debug.is_debug():
-            print("Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100))
+            print(
+                "Baseline fitness is {0:0.2f}%".format(baseline_fitness * 100)
+            )
+            print(
+                "Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100)
+            )
         # TODO: Handle failure better.
         #       Ideally fitness should be better than the current
         #       UV configuration.
@@ -120,7 +135,21 @@ class GridUVPackOperator(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
 
     @staticmethod
-    def _island_face_ids(mesh: bpy.types.Mesh) -> Iterable[set[int]]:
+    def _calculate_baseline_fitness(
+            bm: bmesh.types.BMesh,
+            grid_size: int,
+            face_ids: Iterable[int]
+    ) -> float:
+        # FIXME: This will fail if any of the islands are out of bounds.
+        mask = discrete.Grid.empty(width=grid_size, height=grid_size)
+        offset = Vector((0, 0))
+        cell_size = 1.0 / grid_size
+        continuous.fill_mask(bm, set(face_ids), offset, cell_size, mask)
+        ones = np.count_nonzero(mask.cells)
+        return float(ones) / (grid_size * grid_size)
+
+    @staticmethod
+    def _island_face_ids(mesh: bpy.types.Mesh) -> List[set[int]]:
         """Calculate sets of faces that form a UV island."""
         island_face_ids = []
         island_faces = bpy_extras.mesh_utils.mesh_linked_uv_islands(mesh)
