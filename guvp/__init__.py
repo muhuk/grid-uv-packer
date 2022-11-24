@@ -43,10 +43,11 @@ else:
 
 bl_info = {
     "name": "Grid UV Packer",
-    "description": "TBD",
+    "description": "A pure-Python UV packer that packs "
+                   + "irregularly shaped UV islands efficiently.",
     "author": "Atamert Ölçgen",
-    "version": (1, 2),
-    "blender": (2, 93, 0),
+    "version": (0, 1),
+    "blender": (3, 2, 1),
     "location": "TBD",
     "tracker_url": "https://github.com/muhuk/grid_uv_packer",
     "support": "COMMUNITY",
