@@ -164,13 +164,17 @@ def fill_mask(
         offset: Vector,
         cell_size: float,
         mask: discrete.Grid
-):
+) -> bool:
     open_cells: Set[discrete.CellCoord] = set(mask)
     uv_ident = bm.loops.layers.uv.verify()
 
     for face_id in face_ids:
         loop_uvs = [face_loop[uv_ident].uv
                     for face_loop in bm.faces[face_id].loops]
+        # Out of bounds check
+        for (u, v) in loop_uvs:
+            if not (0.0 <= u <= 1.0 and 0.0 <= v <= 1.0):
+                return False
         # When we use triangulate, we are assuming the face,
         # when it is an n-gon, is convex.  There is basically no way
         # to triangulate a concave n-gon without triangulating it first.
@@ -196,3 +200,4 @@ def fill_mask(
                         mask[open_cell_id] = True
                         break
             open_cells -= hit_cells
+    return True

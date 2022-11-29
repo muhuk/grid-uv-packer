@@ -27,7 +27,7 @@ if "bpy" in locals():
 else:
     # stdlib
     from functools import reduce
-    from typing import (Iterable, List, Set)
+    from typing import (Iterable, List, Optional, Set)
     # blender
     import bpy                    # type: ignore
     import bpy_extras             # type: ignore
@@ -98,11 +98,16 @@ class GridUVPackOperator(bpy.types.Operator):
         bm.faces.ensure_lookup_table()
         # Calculate fitness of the input UVs.
         island_face_ids: List[set[int]] = self._island_face_ids(mesh)
-        baseline_fitness: float = self._calculate_baseline_fitness(
+        baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
             bm,
             grid_size,
             reduce(lambda a, b: set(a) | b, island_face_ids, set())
         )
+        if baseline_fitness is None:
+            # TODO: Use a context here.
+            bm.free()
+            bpy.ops.object.editmode_toggle()
+            raise RuntimeError("Island out of bounds in active UV map.")
         packer = packing.GridPacker(
             initial_size=grid_size,
             islands=[
@@ -113,6 +118,7 @@ class GridUVPackOperator(bpy.types.Operator):
         )
         packer.run()
         if debug.is_debug():
+            assert baseline_fitness is not None
             print(
                 "Baseline fitness is {0:0.2f}%".format(baseline_fitness * 100)
             )
@@ -139,14 +145,19 @@ class GridUVPackOperator(bpy.types.Operator):
             bm: bmesh.types.BMesh,
             grid_size: int,
             face_ids: Iterable[int]
-    ) -> float:
-        # FIXME: This will fail if any of the islands are out of bounds.
+    ) -> Optional[float]:
         mask = discrete.Grid.empty(width=grid_size, height=grid_size)
         offset = Vector((0, 0))
         cell_size = 1.0 / grid_size
-        continuous.fill_mask(bm, set(face_ids), offset, cell_size, mask)
+        out_of_bounds = not continuous.fill_mask(
+            bm,
+            set(face_ids),
+            offset,
+            cell_size,
+            mask
+        )
         ones = np.count_nonzero(mask.cells)
-        return float(ones) / (grid_size * grid_size)
+        return None if out_of_bounds else float(ones) / (grid_size * grid_size)
 
     @staticmethod
     def _island_face_ids(mesh: bpy.types.Mesh) -> List[set[int]]:
