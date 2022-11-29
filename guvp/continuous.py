@@ -134,6 +134,18 @@ class Triangle2D:
             other.c
         )
 
+    def intersect_quad(
+            self,
+            quad: Tuple[Vector, Vector, Vector, Vector]
+    ) -> bool:
+        return mathutils.geometry.intersect_tri_tri_2d(
+            self.a, self.b, self.c,
+            quad[0], quad[1], quad[2]
+        ) or mathutils.geometry.intersect_tri_tri_2d(
+            self.a, self.b, self.c,
+            quad[1], quad[2], quad[3]
+        )
+
     @classmethod
     def triangulate(cls, verts: List[Vector]) -> List[Triangle2D]:
         n: int = len(verts)
@@ -188,16 +200,15 @@ def fill_mask(
                 # triangulate the cell's quad.
                 x = float(offset.x + cell_x * cell_size)
                 y = float(offset.y + cell_y * cell_size)
-                grid_tris = Triangle2D.triangulate([
+                quad: Tuple[Vector, Vector, Vector, Vector] = (
                     Vector((x, y)),
                     Vector((x, y + cell_size)),
                     Vector((x + cell_size, y + cell_size)),
                     Vector((x + cell_size, y))
-                ])
-                for grid_tri in grid_tris:
-                    if grid_tri.intersect(face_tri):
-                        hit_cells.add(open_cell_id)
-                        mask[open_cell_id] = True
-                        break
+                )
+                if face_tri.intersect_quad(quad):
+                    hit_cells.add(open_cell_id)
+                    mask[open_cell_id] = True
+                    break
             open_cells -= hit_cells
     return True
