@@ -181,34 +181,40 @@ def fill_mask(
     uv_ident = bm.loops.layers.uv.verify()
 
     for face_id in face_ids:
-        loop_uvs = [face_loop[uv_ident].uv
-                    for face_loop in bm.faces[face_id].loops]
+        loop_uvs: List[Vector] = [
+            face_loop[uv_ident].uv for face_loop in bm.faces[face_id].loops
+        ]
         # Out of bounds check
+        u_min, u_max = math.inf, -math.inf
+        v_min, v_max = math.inf, -math.inf
         for (u, v) in loop_uvs:
             if not (0.0 <= u <= 1.0 and 0.0 <= v <= 1.0):
                 return False
+            u_min = min(u_min, u)
+            u_max = max(u_max, u)
+            v_min = min(v_min, v)
+            v_max = max(v_max, v)
         # When we use triangulate, we are assuming the face,
         # when it is an n-gon, is convex.  There is basically no way
         # to triangulate a concave n-gon without triangulating it first.
-        for face_tri in Triangle2D.triangulate(
-                [(u, v) for (u, v) in loop_uvs]
-        ):
+        for face_tri in Triangle2D.triangulate(loop_uvs):
             hit_cells: Set[discrete.CellCoord] = set()
             for open_cell_id in open_cells:
                 cell_x: int = open_cell_id[0]
                 cell_y: int = open_cell_id[1]
-                # triangulate the cell's quad.
                 x = float(offset.x + cell_x * cell_size)
                 y = float(offset.y + cell_y * cell_size)
-                quad: Tuple[Vector, Vector, Vector, Vector] = (
-                    Vector((x, y)),
-                    Vector((x, y + cell_size)),
-                    Vector((x + cell_size, y + cell_size)),
-                    Vector((x + cell_size, y))
-                )
-                if face_tri.intersect_quad(quad):
-                    hit_cells.add(open_cell_id)
-                    mask[open_cell_id] = True
-                    break
+                # Skip cell if it is not within tri bounds.
+                if u_min <= x + cell_size and u_max >= x \
+                   and v_min <= y + cell_size and v_max >= y:
+                    quad: Tuple[Vector, Vector, Vector, Vector] = (
+                        Vector((x, y + cell_size)),
+                        Vector((x + cell_size, y + cell_size)),
+                        Vector((x, y)),
+                        Vector((x + cell_size, y))
+                    )
+                    if face_tri.intersect_quad(quad):
+                        hit_cells.add(open_cell_id)
+                        mask[open_cell_id] = True
             open_cells -= hit_cells
     return True
