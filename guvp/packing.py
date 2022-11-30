@@ -38,13 +38,13 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
 class Solution:
-    GROW_AREA_CHANCE = 0.5          # Grow chance if utilized area is too big.
-    GROW_AREA_RATIO = 0.85          # Grow if utilized area is larger than this.
-    GROW_BASE_CHANCE = 0.15         # Base grow chance without modifiers
-    GROW_REGULARITY_CHANCE = -0.25  # Grow change if the utilized area is closer to a rectangle.
-    GROW_REGULARITY_RATIO = 0.667   # What is the threshold to consider a rectangle-like fill.
+    GROW_AREA_CHANCE = 0.5           # Grow chance if utilized area is too big.
+    GROW_AREA_RATIO = 0.85           # Grow if utilized area is larger than this.
+    GROW_BASE_CHANCE = 0.15          # Base grow chance without modifiers
+    GROW_REGULARITY_CHANCE = -0.25   # Grow change if the utilized area is closer to a rectangle.
+    GROW_REGULARITY_RATIO = 0.667    # What is the threshold to consider a rectangle-like fill.
     MAX_GROW_COUNT = 2
-    MAX_PLACEMENT_RETRIES = 2500    # Hard limit for tries
+    MAX_PLACEMENT_RETRIES = 100_000  # Hard limit for tries
     SEARCH_START_RESET_CHANCE = 0.333
 
     """Store a set of placements."""
