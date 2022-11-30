@@ -62,12 +62,14 @@ class Island:
             height=math.ceil(size.y / cell_size)
         )
         fill_mask(bm, face_ids, offset, cell_size, mask)
-        # mask.draw_str()
+        dilated_mask: discrete.Grid = mask.dilate(
+            size=int(math.ceil(margin / cell_size / 2.0))
+        )
         return cls(
             face_ids=face_ids,
             uvs=uvs,
             cell_size=cell_size,
-            mask=mask
+            mask=dilated_mask
         )
 
     def write_uvs(
