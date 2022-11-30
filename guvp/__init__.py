@@ -90,6 +90,7 @@ class GridUVPackOperator(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         assert context.mode == 'EDIT_MESH'
+        assert 0.0 <= self.margin <= 1.0
         # Get out of EDIT mode.
         bpy.ops.object.editmode_toggle()
         # We ignore the type of self.grid_size for bpy reasons.

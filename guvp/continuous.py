@@ -23,7 +23,6 @@ import math
 from typing import (
     Dict,
     List,
-    Set,
     Tuple,
     Type
 )
@@ -57,7 +56,7 @@ class Island:
             cell_size: float,
             margin: float
     ) -> Island:
-        (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids)
+        (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids, margin)
         mask = discrete.Grid.empty(
             width=math.ceil(size.x / cell_size),
             height=math.ceil(size.y / cell_size)
@@ -82,15 +81,19 @@ class Island:
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
                 assert face_loop.index in self.uvs[face_id]
-                face_loop[uv_ident].uv = Vector(self.uvs[face_id][face_loop.index])
+                face_loop[uv_ident].uv = Vector(
+                    self.uvs[face_id][face_loop.index]
+                )
                 face_loop[uv_ident].uv += offset_vec
                 face_loop[uv_ident].uv *= scaling_factor
 
     @staticmethod
     def _calculate_uvs_and_size(
             bm: bmesh.types.BMesh,
-            face_ids: set[int]
+            face_ids: set[int],
+            margin: float
     ) -> tuple[IslandUVs, Vector, Vector]:
+        margin_vec: Vector = Vector((margin, margin))
         uvs: IslandUVs = {}
         uv_ident = bm.loops.layers.uv.verify()
         (u_min, v_min) = (math.inf, math.inf)
@@ -109,8 +112,10 @@ class Island:
                 del u, v
             uvs[face_id] = face_uvs
         size = Vector((u_max - u_min, v_max - v_min))
+        size += margin_vec
         # Offset everything by (-u_min, -v_min)
         offset = Vector((u_min, v_min))
+        offset -= margin_vec / 2.0
         for k, fuv in uvs.items():
             for loop_id, uv in fuv.items():
                 (new_u, new_v) = Vector(uv) - offset
