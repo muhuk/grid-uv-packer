@@ -74,6 +74,13 @@ class GridUVPackOperator(bpy.types.Operator):
             ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
         )
     )
+    margin: bpy.props.FloatProperty(          # type: ignore
+        name="Margin",                        # noqa: F821
+        description="Space between islands.",
+        default=0.01,
+        min=0.0,
+        max=1.0
+    )
 
     @classmethod
     def poll(cls, context):
@@ -111,7 +118,12 @@ class GridUVPackOperator(bpy.types.Operator):
         packer = packing.GridPacker(
             initial_size=grid_size,
             islands=[
-                continuous.Island.from_faces(bm, face_ids, cell_size)
+                continuous.Island.from_faces(
+                    bm,
+                    face_ids,
+                    cell_size,
+                    self.margin
+                )
                 for face_ids in island_face_ids
             ],
             random_seed=12345

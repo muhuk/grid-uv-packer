@@ -54,8 +54,8 @@ class Island:
             cls: Type[Island],
             bm: bmesh.types.BMesh,
             face_ids: set[int],
-            cell_size: float
-            # TODO: add margin parameters
+            cell_size: float,
+            margin: float
     ) -> Island:
         (uvs, size, offset) = cls._calculate_uvs_and_size(bm, face_ids)
         mask = discrete.Grid.empty(
