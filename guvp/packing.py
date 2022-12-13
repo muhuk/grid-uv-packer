@@ -138,25 +138,31 @@ class Solution:
         return float(self._initial_size) / max(self._utilized_area[0],
                                                self._utilized_area[1])
 
-    def _advance_search_cell(self, search_cell: discrete.CellCoord) -> discrete.CellCoord:
+    def _advance_search_cell(
+            self,
+            search_cell: discrete.CellCoord
+    ) -> discrete.CellCoord:
         x: float = float(search_cell[0]) / (self._mask.width - 1)
         y: float = float(search_cell[1]) / (self._mask.height - 1)
-        up_chance: float = math.sin(x ** 3 * math.pi * 0.5) \
-                         * math.cos(y ** 2 * math.pi * 0.5)
+        up_chance: float = \
+            math.sin(x ** 3 * math.pi * 0.5) \
+            * math.cos(y ** 2 * math.pi * 0.5)
         new_search_cell = search_cell.offset(1, 0)
-        if self._rng.random() <= up_chance or new_search_cell not in self._mask:
-            new_search_cell = discrete.CellCoord(x=0, y=search_cell.y+1)
+        if self._rng.random() <= up_chance \
+           or new_search_cell not in self._mask:
+            new_search_cell = discrete.CellCoord(x=0, y=search_cell.y + 1)
         return new_search_cell
-
 
     def _calculate_grow_chance(self) -> float:
         grow_chance: float = self.GROW_BASE_CHANCE
+        utilized_x: float = float(self._utilized_area[0])
+        utilized_y: float = float(self._utilized_area[1])
         # Grow if utilized area gets too large compared to current mask size.
-        if float(self._utilized_area[0]) / self._mask.width > self.GROW_AREA_RATIO or \
-           float(self._utilized_area[1]) / self._mask.height > self.GROW_AREA_RATIO:
+        if utilized_x / self._mask.width > self.GROW_AREA_RATIO or \
+           utilized_y / self._mask.height > self.GROW_AREA_RATIO:
             grow_chance += self.GROW_AREA_CHANCE
         # Grow only if utilized area is rectangular.
-        ratio: float = float(self._utilized_area[0]) / float(self._utilized_area[1])
+        ratio: float = utilized_x / utilized_y
         if ratio > 1.0:
             ratio = 1.0 / ratio
         if ratio <= self.GROW_REGULARITY_RATIO:
