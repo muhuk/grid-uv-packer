@@ -79,7 +79,8 @@ class GridUVPackOperator(bpy.types.Operator):
         description="Space between islands.",
         default=0.01,
         min=0.0,
-        max=1.0
+        max=1.0,
+        precision=3
     )
 
     @classmethod
