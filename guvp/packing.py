@@ -162,7 +162,8 @@ class Solution:
            utilized_y / self._mask.height > self.GROW_AREA_RATIO:
             grow_chance += self.GROW_AREA_CHANCE
         # Grow only if utilized area is rectangular.
-        ratio: float = utilized_x / utilized_y
+        ratio: float = utilized_x / utilized_y \
+            if utilized_x != 0.0 and utilized_y != 0.0 else 1.0
         if ratio > 1.0:
             ratio = 1.0 / ratio
         if ratio <= self.GROW_REGULARITY_RATIO:
