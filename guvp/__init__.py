@@ -28,6 +28,7 @@ else:
     # stdlib
     from contextlib import contextmanager
     from functools import reduce
+    import random
     from typing import (Iterable, List, Optional, Set)
     # blender
     import bpy                    # type: ignore
@@ -82,6 +83,11 @@ class GridUVPackOperator(bpy.types.Operator):
         max=1.0,
         precision=3
     )
+    seed: bpy.props.IntProperty(              # type: ignore
+        name="Random Seed",
+        description="Seed of the random generator.",
+        default=0
+    )
 
     @classmethod
     def poll(cls, context):
@@ -108,6 +114,9 @@ class GridUVPackOperator(bpy.types.Operator):
             )
             if baseline_fitness is None:
                 raise RuntimeError("Island out of bounds in active UV map.")
+            random_seed: int = self.seed if self.seed != 0 else random.randint(0, 2 ** 31 - 1)
+            if debug.is_debug():
+                print("Seed being used is: {}".format(random_seed))
             packer = packing.GridPacker(
                 initial_size=grid_size,
                 islands=[
@@ -119,7 +128,7 @@ class GridUVPackOperator(bpy.types.Operator):
                     )
                     for face_ids in island_face_ids
                 ],
-                random_seed=12345
+                random_seed=random_seed
             )
             packer.run()
             if debug.is_debug():
