@@ -18,4 +18,7 @@ grid-uv-packer is released with [GPL license](./COPYING.txt), same as
 
 ## Usage
 
-**TBD**
+Once you enabled the addon, in UV editor a `Grid UV Pack` command will be
+available in `UV -> Unwrap` menu (`U` key by default).  This command will
+create a modal dialog where you can adjust settings like grid size. Your UV's
+will be modified once you click `OK` on this modal dialog.
