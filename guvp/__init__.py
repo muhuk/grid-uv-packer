@@ -46,8 +46,7 @@ else:
 
 bl_info = {
     "name": "Grid UV Packer",
-    "description": "A pure-Python UV packer that packs "
-                   + "irregularly shaped UV islands efficiently.",
+    "description": "A pure-Python UV packer.",
     "author": "Atamert Ölçgen",
     "version": (0, 1),
     "blender": (3, 2, 1),
