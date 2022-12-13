@@ -26,6 +26,7 @@ if "bpy" in locals():
         importlib.reload(mod)
 else:
     # stdlib
+    from contextlib import contextmanager
     from functools import reduce
     from typing import (Iterable, List, Optional, Set)
     # blender
@@ -90,67 +91,73 @@ class GridUVPackOperator(bpy.types.Operator):
     def execute(self, context: bpy.types.Context) -> Set[str]:
         assert context.mode == 'EDIT_MESH'
         assert 0.0 <= self.margin <= 1.0
-        # Get out of EDIT mode.
-        bpy.ops.object.editmode_toggle()
         # We ignore the type of self.grid_size for bpy reasons.
         # So let's cast it explicitly here.
         grid_size: int = int(self.grid_size)
         # Size of one grid cell (square) in UV coordinate system.
         cell_size: float = 1.0 / grid_size
+
+        with self._mesh_context(context) as (mesh, bm):
+            # Calculate fitness of the input UVs.
+            island_face_ids: List[set[int]] = self._island_face_ids(mesh)
+            baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
+                bm,
+                grid_size,
+                reduce(lambda a, b: set(a) | b, island_face_ids, set())
+            )
+            if baseline_fitness is None:
+                raise RuntimeError("Island out of bounds in active UV map.")
+            packer = packing.GridPacker(
+                initial_size=grid_size,
+                islands=[
+                    continuous.Island.from_faces(
+                        bm,
+                        face_ids,
+                        cell_size,
+                        self.margin
+                    )
+                    for face_ids in island_face_ids
+                ],
+                random_seed=12345
+            )
+            packer.run()
+            if debug.is_debug():
+                assert baseline_fitness is not None
+                print(
+                    "Baseline fitness is {0:0.2f}%".format(baseline_fitness * 100)
+                )
+                print(
+                    "Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100)
+                )
+            # TODO: Handle failure better.
+            #       Ideally fitness should be better than the current
+            #       UV configuration.
+            if packer.fitness > 0.20:
+                packer.write(bm)
+                bm.to_mesh(mesh)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    @staticmethod
+    @contextmanager
+    def _mesh_context(context: bpy.types.Context):
+        # Get out of EDIT mode.
+        bpy.ops.object.editmode_toggle()
         mesh = context.active_object.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
-        # Calculate fitness of the input UVs.
-        island_face_ids: List[set[int]] = self._island_face_ids(mesh)
-        baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
-            bm,
-            grid_size,
-            reduce(lambda a, b: set(a) | b, island_face_ids, set())
-        )
-        if baseline_fitness is None:
-            # TODO: Use a context here.
+        try:
+            yield (mesh, bm)
+        finally:
             bm.free()
+            # Back into EDIT mode.
             bpy.ops.object.editmode_toggle()
-            raise RuntimeError("Island out of bounds in active UV map.")
-        packer = packing.GridPacker(
-            initial_size=grid_size,
-            islands=[
-                continuous.Island.from_faces(
-                    bm,
-                    face_ids,
-                    cell_size,
-                    self.margin
-                )
-                for face_ids in island_face_ids
-            ],
-            random_seed=12345
-        )
-        packer.run()
-        if debug.is_debug():
-            assert baseline_fitness is not None
-            print(
-                "Baseline fitness is {0:0.2f}%".format(baseline_fitness * 100)
-            )
-            print(
-                "Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100)
-            )
-        # TODO: Handle failure better.
-        #       Ideally fitness should be better than the current
-        #       UV configuration.
-        if packer.fitness > 0.20:
-            packer.write(bm)
-        bm.to_mesh(mesh)
-        bm.free()
-        # Back into EDIT mode.
-        bpy.ops.object.editmode_toggle()
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
 
     @staticmethod
     def _calculate_baseline_fitness(
