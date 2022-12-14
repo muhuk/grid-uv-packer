@@ -6,6 +6,10 @@ Boundary(moduleInit, "__init__") {
   Component(gridUvPackOperator, "GridUVPackOperator", "Operator")
 }
 
+Boundary(moduleConstants, "constants") {
+  Component(constants, "Constants")
+}
+
 Boundary(moduleContinuous, "continuous") {
   Component(faceUvs, "FaceUVs", "Dict[int, Vector]")
   Component(islandUvs, "IslandUVs", "Dickt[int, FaceUVs]")
@@ -17,6 +21,9 @@ Boundary(moduleContinuous, "continuous") {
   Rel(island, triangle2d, " ")
 
   Rel(islandUvs, faceUvs, " ")
+}
+
+Boundary(moduleDebug, "debug") {
 }
 
 Boundary(moduleData, "packing") {
@@ -37,12 +44,16 @@ Boundary(moduleDiscrete, "discrete") {
   Rel(grid, cellCoord, " ")
 }
 
+Rel(gridUvPackOperator, constants, " ")
 Rel(gridUvPackOperator, gridPacker, " ")
 Rel(gridUvPackOperator, island, " ")
 
 Rel(gridPacker, cellCoord, " ")
+Rel(gridPacker, constants, " ")
 Rel(gridPacker, grid, " ")
 Rel(gridPacker, island, " ")
+
+Rel(solution, constants, " ")
 
 Rel(island, cellCoord, " ")
 Rel(island, grid, " ")

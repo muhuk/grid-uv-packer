@@ -20,7 +20,7 @@
 from __future__ import annotations
 from collections import deque
 from concurrent import futures
-from dataclasses import (dataclass, field, InitVar)
+from dataclasses import dataclass
 import enum
 import itertools
 import math
@@ -31,22 +31,13 @@ from typing import (List, Tuple, Optional)
 import bmesh                  # type: ignore
 import numpy as np            # type: ignore
 
-from guvp import (continuous, debug, discrete)
+from guvp import (constants, continuous, debug, discrete)
 
 
 CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
 class Solution:
-    GROW_AREA_CHANCE = 0.5           # Grow chance if utilized area is too big.
-    GROW_AREA_RATIO = 0.85           # Grow if utilized area is larger than this.
-    GROW_BASE_CHANCE = 0.15          # Base grow chance without modifiers
-    GROW_REGULARITY_CHANCE = -0.25   # Grow change if the utilized area is closer to a rectangle.
-    GROW_REGULARITY_RATIO = 0.667    # What is the threshold to consider a rectangle-like fill.
-    MAX_GROW_COUNT = 2
-    MAX_PLACEMENT_RETRIES = 100_000  # Hard limit for tries
-    SEARCH_START_RESET_CHANCE = 0.333
-
     """Store a set of placements."""
     def __init__(
             self,
@@ -77,13 +68,14 @@ class Solution:
         islands_remaining = deque(islands_to_place)
         del islands_to_place
         self._rng.shuffle(islands_remaining)
-        # We need to reset search cell here since pack may be called several times.
+        # We need to reset search cell here since
+        # pack may be called several times.
         self._search_start = discrete.CellCoord.zero()
         island_retries_left: int = len(islands_remaining)
         while len(islands_remaining) > 0 and island_retries_left > 0:
             # self._mask.draw_str()
             island_retries_left -= 1
-            placement_retries_left: int = self.MAX_PLACEMENT_RETRIES
+            placement_retries_left: int = constants.MAX_PLACEMENT_RETRIES
             island: continuous.Island = islands_remaining.popleft()
             search_cell: discrete.CellCoord = self._search_start
             island_placement: Optional[IslandPlacement] = None
@@ -119,7 +111,7 @@ class Solution:
                 self.islands.append(island_placement)
                 self._write_island_to_mask(island_placement)
                 self._update_utilized_area(island_placement)
-            if self._rng.random() <= self.SEARCH_START_RESET_CHANCE:
+            if self._rng.random() <= constants.SEARCH_START_RESET_CHANCE:
                 self._search_start = discrete.CellCoord.zero()
         # Run is successful if all the islands are placed.
         return len(islands_remaining) == 0
@@ -154,20 +146,20 @@ class Solution:
         return new_search_cell
 
     def _calculate_grow_chance(self) -> float:
-        grow_chance: float = self.GROW_BASE_CHANCE
+        grow_chance: float = constants.GROW_BASE_CHANCE
         utilized_x: float = float(self._utilized_area[0])
         utilized_y: float = float(self._utilized_area[1])
         # Grow if utilized area gets too large compared to current mask size.
-        if utilized_x / self._mask.width > self.GROW_AREA_RATIO or \
-           utilized_y / self._mask.height > self.GROW_AREA_RATIO:
-            grow_chance += self.GROW_AREA_CHANCE
+        if utilized_x / self._mask.width > constants.GROW_AREA_RATIO or \
+           utilized_y / self._mask.height > constants.GROW_AREA_RATIO:
+            grow_chance += constants.GROW_AREA_CHANCE
         # Grow only if utilized area is rectangular.
         ratio: float = utilized_x / utilized_y \
             if utilized_x != 0.0 and utilized_y != 0.0 else 1.0
         if ratio > 1.0:
             ratio = 1.0 / ratio
-        if ratio <= self.GROW_REGULARITY_RATIO:
-            grow_chance += self.GROW_REGULARITY_CHANCE
+        if ratio <= constants.GROW_REGULARITY_RATIO:
+            grow_chance += constants.GROW_REGULARITY_CHANCE
         del ratio
         return max(0.0, min(grow_chance, 1.0))
 
@@ -190,7 +182,8 @@ class Solution:
 
     def _grow(self) -> None:
         # Limit growing.
-        if self._mask.width >= self._initial_size * (2 ** self.MAX_GROW_COUNT):
+        max_size: int = self._initial_size * (2 ** constants.MAX_GROW_COUNT)
+        if self._mask.width >= max_size:
             if debug.is_debug():
                 print("Cannot grow more.")
             return None
@@ -219,9 +212,6 @@ class Solution:
 
 
 class GridPacker:
-    SEED_MAX = 2 ** 31 - 1
-    OFFERS_MULTIPLIER = 5.0
-
     def __init__(
             self,
             initial_size: int,
@@ -249,7 +239,7 @@ class GridPacker:
         results = executor.map(
             self._run_solution,
             itertools.repeat(self._initial_size),
-            [self._rng.randint(0, self.SEED_MAX) for _ in range(n)],
+            [self._rng.randint(0, constants.SEED_MAX) for _ in range(n)],
             itertools.repeat(large_islands),
             itertools.repeat(small_islands)
         )
@@ -267,15 +257,22 @@ class GridPacker:
             scaling_factor = self._winner.scaling_factor
             ip.write_uvs(bm, scaling_factor)
 
-    def _categorize_islands(self) -> Tuple[List[continuous.Island], List[continuous.Island]]:
+    def _categorize_islands(self) -> Tuple[List[continuous.Island],
+                                           List[continuous.Island]]:
         island_sizes: List[int] = sorted([len(i.mask) for i in self._islands])
         median_size: int = statistics.median_low(island_sizes)
         large_islands = [i for i in self._islands if len(i.mask) > median_size]
-        small_islands = [i for i in self._islands if len(i.mask) <= median_size]
+        small_islands = [
+            i for i in self._islands if len(i.mask) <= median_size
+        ]
         return (large_islands, small_islands)
 
     @staticmethod
-    def _run_solution(initial_size: int, seed: int, *grouped_islands: List[continuous.Island]) -> Tuple[bool, Solution]:
+    def _run_solution(
+            initial_size: int,
+            seed: int,
+            *grouped_islands: List[continuous.Island]
+    ) -> Tuple[bool, Solution]:
         solution: Solution = Solution(initial_size, seed)
         return solution.pack_grouped(*grouped_islands), solution
 

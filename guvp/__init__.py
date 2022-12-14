@@ -21,7 +21,14 @@ from __future__ import annotations
 
 if "bpy" in locals():
     import importlib
-    for mod in [continuous, debug, discrete, packing, props]:  # noqa: F821
+    for mod in [                  # noqa: F821
+            constants,            # noqa: F821
+            continuous,           # noqa: F821
+            debug,                # noqa: F821
+            discrete,             # noqa: F821
+            packing,              # noqa: F821
+            props                 # noqa: F821
+    ]:
         print("reloading {0}".format(mod))
         importlib.reload(mod)
 else:
@@ -37,7 +44,8 @@ else:
     from mathutils import Vector  # type: ignore
     import numpy as np            # type: ignore
     # addon
-    from guvp import (  # noqa: F401
+    from guvp import (            # noqa: F401
+        constants,
         continuous,
         debug,
         discrete,
@@ -107,7 +115,8 @@ class GridUVPackOperator(bpy.types.Operator):
         with self._mesh_context(context) as (mesh, bm):
             # Calculate fitness of the input UVs.
             island_face_ids: List[set[int]] = self._island_face_ids(mesh)
-            baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
+            baseline_fitness: Optional[float]
+            baseline_fitness = self._calculate_baseline_fitness(
                 bm,
                 grid_size,
                 reduce(lambda a, b: set(a) | b, island_face_ids, set())
@@ -117,7 +126,9 @@ class GridUVPackOperator(bpy.types.Operator):
                     {'ERROR'}, "Island out of bounds in active UV map."
                 )
                 return {'CANCELLED'}
-            random_seed: int = self.seed if self.seed != 0 else random.randint(0, 2 ** 31 - 1)
+            # Use a random seed if seed prop is set to zero.
+            random_seed: int = self.seed if self.seed != 0 \
+                else random.randint(0, constants.SEED_MAX)
             if debug.is_debug():
                 print("Seed being used is: {}".format(random_seed))
             packer = packing.GridPacker(
@@ -137,10 +148,14 @@ class GridUVPackOperator(bpy.types.Operator):
             if debug.is_debug():
                 assert baseline_fitness is not None
                 print(
-                    "Baseline fitness is {0:0.2f}%".format(baseline_fitness * 100)
+                    "Baseline fitness is {0:0.2f}%".format(
+                        baseline_fitness * 100
+                    )
                 )
                 print(
-                    "Grid packer fitness is {0:0.2f}%".format(packer.fitness * 100)
+                    "Grid packer fitness is {0:0.2f}%".format(
+                        packer.fitness * 100
+                    )
                 )
             # TODO: Handle failure better.
             #       Ideally fitness should be better than the current

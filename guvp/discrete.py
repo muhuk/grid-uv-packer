@@ -42,7 +42,7 @@ class CellCoord(NamedTuple):
 
 class Grid:
     def __init__(self, cells: np.ndarray):
-        assert(cells.ndim == 2)
+        assert cells.ndim == 2
         (height, width) = cells.shape
         self.cells = cells
         self.width = width

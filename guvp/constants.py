@@ -20,3 +20,27 @@
 ADDON_NAME = __package__
 
 DEBUG_MODE_DEFAULT: bool = False
+
+# Grow chance if utilized area is too big.
+GROW_AREA_CHANCE = 0.5
+
+# Grow if utilized area is larger than this.
+GROW_AREA_RATIO = 0.85
+
+# Base grow chance without modifiers
+GROW_BASE_CHANCE = 0.15
+
+# Grow change if the utilized area is closer to a rectangle.
+GROW_REGULARITY_CHANCE = -0.25
+
+# What is the threshold to consider a rectangle-like fill.
+GROW_REGULARITY_RATIO = 0.667
+
+MAX_GROW_COUNT = 2
+
+# Hard limit for tries
+MAX_PLACEMENT_RETRIES = 100_000
+
+SEARCH_START_RESET_CHANCE = 0.333
+
+SEED_MAX = 2 ** 31 - 1
