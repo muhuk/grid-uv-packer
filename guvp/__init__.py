@@ -94,7 +94,9 @@ class GridUVPackOperator(bpy.types.Operator):
     seed: bpy.props.IntProperty(              # type: ignore
         name="Random Seed",
         description="Seed of the random generator.",
-        default=0
+        default=0,
+        min=0,
+        max=constants.SEED_MAX
     )
 
     @classmethod
