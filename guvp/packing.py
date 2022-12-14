@@ -54,6 +54,10 @@ class Solution:
             width=initial_size,
             height=initial_size
         )
+        self._collision_mask = discrete.Grid.empty(
+            width=initial_size,
+            height=initial_size
+        )
 
     @property
     def fitness(self) -> float:
@@ -73,7 +77,6 @@ class Solution:
         self._search_start = discrete.CellCoord.zero()
         island_retries_left: int = len(islands_remaining)
         while len(islands_remaining) > 0 and island_retries_left > 0:
-            # self._mask.draw_str()
             island_retries_left -= 1
             placement_retries_left: int = constants.MAX_PLACEMENT_RETRIES
             island: continuous.Island = islands_remaining.popleft()
@@ -134,14 +137,14 @@ class Solution:
             self,
             search_cell: discrete.CellCoord
     ) -> discrete.CellCoord:
-        x: float = float(search_cell[0]) / (self._mask.width - 1)
-        y: float = float(search_cell[1]) / (self._mask.height - 1)
+        x: float = float(search_cell[0]) / (self._collision_mask.width - 1)
+        y: float = float(search_cell[1]) / (self._collision_mask.height - 1)
         up_chance: float = \
             math.sin(x ** 3 * math.pi * 0.5) \
             * math.cos(y ** 2 * math.pi * 0.5)
         new_search_cell = search_cell.offset(1, 0)
         if self._rng.random() <= up_chance \
-           or new_search_cell not in self._mask:
+           or new_search_cell not in self._collision_mask:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y + 1)
         return new_search_cell
 
@@ -150,9 +153,12 @@ class Solution:
         utilized_x: float = float(self._utilized_area[0])
         utilized_y: float = float(self._utilized_area[1])
         # Grow if utilized area gets too large compared to current mask size.
-        if utilized_x / self._mask.width > constants.GROW_AREA_RATIO or \
-           utilized_y / self._mask.height > constants.GROW_AREA_RATIO:
+        w: int = self._collision_mask.width
+        h: int = self._collision_mask.height
+        if utilized_x / w > constants.GROW_AREA_RATIO or \
+           utilized_y / h > constants.GROW_AREA_RATIO:
             grow_chance += constants.GROW_AREA_CHANCE
+        del w, h
         # Grow only if utilized area is rectangular.
         ratio: float = utilized_x / utilized_y \
             if utilized_x != 0.0 and utilized_y != 0.0 else 1.0
@@ -169,13 +175,15 @@ class Solution:
             return CollisionResult.OUT_OF_BOUNDS
         if island_bounds[1] < 0:
             return CollisionResult.OUT_OF_BOUNDS
-        if island_bounds[2] > self._mask.width:
+        if island_bounds[2] > self._collision_mask.width:
             return CollisionResult.OUT_OF_BOUNDS
-        if island_bounds[3] > self._mask.height:
+        if island_bounds[3] > self._collision_mask.height:
             return CollisionResult.OUT_OF_BOUNDS
 
-        island_mask = ip.get_mask((self._mask.width, self._mask.height))
-        if (self._mask & island_mask).any():
+        island_mask = ip.get_mask(
+            (self._collision_mask.width, self._collision_mask.height)
+        )
+        if (self._collision_mask & island_mask).any():
             return CollisionResult.YES
         else:
             return CollisionResult.NO
@@ -183,19 +191,21 @@ class Solution:
     def _grow(self) -> None:
         # Limit growing.
         max_size: int = self._initial_size * (2 ** constants.MAX_GROW_COUNT)
-        if self._mask.width >= max_size:
+        if self._collision_mask.width >= max_size:
             if debug.is_debug():
                 print("Cannot grow more.")
             return None
         if debug.is_debug():
             print("Growing")
         # Create a mask with the new size & copy current mask's contents.
-        new_size = self._mask.width * 2
-        new_mask = self._mask.copy((0,
-                                    0,
-                                    new_size - self._mask.width,
-                                    new_size - self._mask.height))
+        new_mask = self._mask.copy(
+            (0, 0, self._mask.width, self._mask.height)
+        )
         self._mask = new_mask
+        new_collision_mask = self._collision_mask.copy(
+            (0, 0, self._collision_mask.width, self._collision_mask.height)
+        )
+        self._collision_mask = new_collision_mask
         # No need to update utilized area.
         return None
 
@@ -207,8 +217,12 @@ class Solution:
         )
 
     def _write_island_to_mask(self, ip: IslandPlacement) -> None:
-        self._mask.cells |= ip.get_mask((self._mask.width,
-                                         self._mask.height)).cells
+        self._mask.cells |= ip.get_mask(
+            (self._mask.width, self._mask.height)
+        ).cells
+        self._collision_mask.cells |= ip.get_collision_mask(
+            (self._collision_mask.width, self._collision_mask.height)
+        ).cells
 
 
 class GridPacker:
@@ -299,6 +313,19 @@ class IslandPlacement:
              bounds[0] - (self.offset.x + self.island.mask.width),
              bounds[1] - (self.offset.y + self.island.mask.height))
         )
+
+    def get_collision_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
+        if self.island.mask_with_margin is None:
+            return self.get_mask(bounds)
+        else:
+            w: int = self.island.mask_with_margin.width
+            h: int = self.island.mask_with_margin.height
+            return self.island.mask_with_margin.copy(
+                (self.offset.x,
+                 self.offset.y,
+                 bounds[0] - (self.offset.x + w),
+                 bounds[1] - (self.offset.y + h))
+            )
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
         self.island.write_uvs(bm, self.offset, scaling_factor)

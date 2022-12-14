@@ -23,6 +23,7 @@ import math
 from typing import (
     Dict,
     List,
+    Optional,
     Tuple,
     Type
 )
@@ -47,6 +48,7 @@ class Island:
     uvs: IslandUVs
     cell_size: float
     mask: discrete.Grid
+    mask_with_margin: Optional[discrete.Grid]
 
     @classmethod
     def from_faces(
@@ -62,14 +64,17 @@ class Island:
             height=math.ceil(size.y / cell_size)
         )
         fill_mask(bm, face_ids, offset, cell_size, mask)
-        dilated_mask: discrete.Grid = mask.dilate(
-            size=int(math.ceil(margin / cell_size / 2.0))
-        )
+        # margin / cell_size to convert from UV space to number
+        # of grid cells. This is divided by two since islands on
+        # both sides will have the margin.
+        margin_cells: int = int(max(0, math.ceil(margin / cell_size / 2.0)))
+        mask_w_m = mask.dilate(size=margin_cells) if margin_cells > 0 else None
         return cls(
             face_ids=face_ids,
             uvs=uvs,
             cell_size=cell_size,
-            mask=dilated_mask
+            mask=mask,
+            mask_with_margin=mask_w_m
         )
 
     def write_uvs(
