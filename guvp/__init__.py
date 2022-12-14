@@ -113,7 +113,10 @@ class GridUVPackOperator(bpy.types.Operator):
                 reduce(lambda a, b: set(a) | b, island_face_ids, set())
             )
             if baseline_fitness is None:
-                raise RuntimeError("Island out of bounds in active UV map.")
+                self.report(
+                    {'ERROR'}, "Island out of bounds in active UV map."
+                )
+                return {'CANCELLED'}
             random_seed: int = self.seed if self.seed != 0 else random.randint(0, 2 ** 31 - 1)
             if debug.is_debug():
                 print("Seed being used is: {}".format(random_seed))
