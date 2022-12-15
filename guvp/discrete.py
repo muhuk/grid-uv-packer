@@ -92,32 +92,21 @@ class Grid:
         return Grid(cells)
 
     def dilate(self, size: int) -> Grid:
-        # TODO: This is applying a box kernel.  It's fast but wasteful.
-        #       Replace this with a circular kernel.
-        if size == 1:
-            return Grid(cells=self.cells.copy())
-        kernel = [True] * (2 * size + 1)
-        dilated = np.apply_along_axis(
-            np.convolve,
-            1,                         # along x
-            self.cells,
-            kernel,
-            'same'
-        )
-        dilated = np.apply_along_axis(
-            np.convolve,
-            0,                         # along y
-            dilated,
-            kernel,
-            'same'
-        )
+        dilated = self.cells
+        for dy in range(-size, size + 1):
+            for dx in range(-size, size + 1):
+                if dx == 0 and dy == 0:
+                    continue
+                elif dx ** 2 + dy ** 2 > size ** 2:
+                    continue
+                dilated |= np.roll(self.cells, (dy, dx), (0, 1))
         return Grid(cells=dilated)
 
     def draw_str(self) -> None:
         MAX_DRAW_DIMENSION: int = 100
         if self.width <= MAX_DRAW_DIMENSION and \
            self.height <= MAX_DRAW_DIMENSION:
-            for row in range(self.height - 1, 0, -1):
+            for row in range(self.height - 1, -1, -1):
                 print('<' if row == 0 else ' ', end='')
                 for column in range(self.width):
                     print('#' if self[CellCoord(column, row)] else '.', end='')
