@@ -58,7 +58,7 @@ bl_info = {
     "name": "Grid UV Packer",
     "description": "A pure-Python UV packer.",
     "author": "Atamert Ölçgen",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (3, 2, 1),
     "location": "TBD",
     "tracker_url": "https://github.com/muhuk/grid_uv_packer",
