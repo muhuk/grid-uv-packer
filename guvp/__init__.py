@@ -164,7 +164,11 @@ class GridUVPackOperator(bpy.types.Operator):
             #       UV configuration.
             if packer.fitness > 0.20:
                 packer.write(bm)
+                # Get out of EDIT mode.
+                bpy.ops.object.editmode_toggle()
                 bm.to_mesh(mesh)
+                # Back into EDIT mode.
+                bpy.ops.object.editmode_toggle()
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -174,8 +178,6 @@ class GridUVPackOperator(bpy.types.Operator):
     @staticmethod
     @contextmanager
     def _mesh_context(context: bpy.types.Context):
-        # Get out of EDIT mode.
-        bpy.ops.object.editmode_toggle()
         mesh = context.active_object.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
@@ -186,8 +188,6 @@ class GridUVPackOperator(bpy.types.Operator):
             yield (mesh, bm)
         finally:
             bm.free()
-            # Back into EDIT mode.
-            bpy.ops.object.editmode_toggle()
 
     @staticmethod
     def _calculate_baseline_fitness(
