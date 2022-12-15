@@ -38,13 +38,13 @@ else:
     import random
     from typing import (Iterable, List, Optional, Set)
     # blender
-    import bpy                    # type: ignore
-    import bpy_extras             # type: ignore
-    import bmesh                  # type: ignore
-    from mathutils import Vector  # type: ignore
-    import numpy as np            # type: ignore
+    import bpy                                                  # type: ignore
+    from bpy_extras.bmesh_utils import bmesh_linked_uv_islands  # type: ignore
+    import bmesh                                                # type: ignore
+    from mathutils import Vector                                # type: ignore
+    import numpy as np                                          # type: ignore
     # addon
-    from guvp import (            # noqa: F401
+    from guvp import (                                          # noqa: F401
         constants,
         continuous,
         debug,
@@ -59,7 +59,7 @@ bl_info = {
     "description": "A pure-Python UV packer.",
     "author": "Atamert Ölçgen",
     "version": (0, 3),
-    "blender": (3, 2, 1),
+    "blender": (3, 4, 0),
     "location": "TBD",
     "tracker_url": "https://github.com/muhuk/grid_uv_packer",
     "support": "COMMUNITY",
@@ -116,7 +116,7 @@ class GridUVPackOperator(bpy.types.Operator):
 
         with self._mesh_context(context) as (mesh, bm):
             # Calculate fitness of the input UVs.
-            island_face_ids: List[set[int]] = self._island_face_ids(mesh)
+            island_face_ids: List[set[int]] = self._island_face_ids(bm)
             baseline_fitness: Optional[float]
             baseline_fitness = self._calculate_baseline_fitness(
                 bm,
@@ -209,13 +209,11 @@ class GridUVPackOperator(bpy.types.Operator):
         return None if out_of_bounds else float(ones) / (grid_size * grid_size)
 
     @staticmethod
-    def _island_face_ids(mesh: bpy.types.Mesh) -> List[set[int]]:
+    def _island_face_ids(bm: bpy.types.BMesh) -> List[set[int]]:
         """Calculate sets of faces that form a UV island."""
-        island_face_ids = []
-        island_faces = bpy_extras.mesh_utils.mesh_linked_uv_islands(mesh)
-        for face_ids in island_faces:
-            island_face_ids.append(set(face_ids))
-        return island_face_ids
+        uv_ident = bm.loops.layers.uv.verify()
+        island_faces = bmesh_linked_uv_islands(bm, uv_ident)
+        return [set([f.index for f in faces]) for faces in island_faces]
 
 
 def menu_draw(self, _context):
