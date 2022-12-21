@@ -114,7 +114,10 @@ class GridUVPackOperator(bpy.types.Operator):
         # Size of one grid cell (square) in UV coordinate system.
         cell_size: float = 1.0 / grid_size
 
-        with self._mesh_context(context) as (mesh, bm):
+        with self._wm_context(context) as wm, \
+             self._mesh_context(context) as (mesh, bm):
+            wm.progress_update(1)
+
             # Calculate fitness of the input UVs.
             island_face_ids: List[set[int]] = self._island_face_ids(bm)
             baseline_fitness: Optional[float]
@@ -146,7 +149,30 @@ class GridUVPackOperator(bpy.types.Operator):
                 ],
                 random_seed=random_seed
             )
-            packer.run()
+            max_iterations: int = 85
+            iterations_run: int = 0
+            fitness: float = 0.0
+            packer_coroutine = packer.run_generator()
+            (iterations_run, fitness) = next(packer_coroutine)
+            wm.progress_update(
+                int(float(iterations_run) / max_iterations * 10000)
+            )
+            if debug.is_debug():
+                print("Batch: # of iterations {}, fitness {}".format(
+                    iterations_run,
+                    fitness
+                ))
+            while iterations_run < max_iterations:
+                (iterations_run, fitness) = packer_coroutine.send(True)
+                wm.progress_update(
+                    int(float(iterations_run) / max_iterations * 10000)
+                )
+                if debug.is_debug():
+                    print("Batch: # of iterations {}, fitness {}".format(
+                        iterations_run,
+                        fitness
+                    ))
+            packer_coroutine.send(False)
             if debug.is_debug():
                 assert baseline_fitness is not None
                 print(
@@ -172,7 +198,7 @@ class GridUVPackOperator(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        wm = context.window_manager
+        wm: bpy.types.WindowManager = context.window_manager
         return wm.invoke_props_dialog(self)
 
     @staticmethod
@@ -188,6 +214,16 @@ class GridUVPackOperator(bpy.types.Operator):
             yield (mesh, bm)
         finally:
             bm.free()
+
+    @staticmethod
+    @contextmanager
+    def _wm_context(context: bpy.types.Context):
+        wm: bpy.types.WindowManager = context.window_manager
+        wm.progress_begin(0, 10000)
+        try:
+            yield wm
+        finally:
+            wm.progress_end()
 
     @staticmethod
     def _calculate_baseline_fitness(

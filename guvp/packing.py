@@ -24,9 +24,10 @@ from dataclasses import dataclass
 import enum
 import itertools
 import math
+import multiprocessing
 import random
 import statistics
-from typing import (List, Tuple, Optional)
+from typing import (List, Generator, Tuple, Optional)
 
 import bmesh                  # type: ignore
 import numpy as np            # type: ignore
@@ -244,25 +245,43 @@ class GridPacker:
         else:
             return self._winner.fitness
 
-    def run(self) -> None:
+    def run_generator(self) -> Generator[Tuple[int, float], bool, None]:
+        # yield type (no_of_iterations_so_far, fitness)
+        # Bookkeeping and decisions are taken on the caller side.
+        #
+        # caller calls next(g) to get the 1st run results.
+        # until good enough results = g.send(True)
+        # if good enough g.send(False) to finish.
+        batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
+        iterations_run: int = 0
+        if debug.is_debug():
+            print("batch size is {}.".format(batch_size))
+        should_continue: bool = True
+
         (large_islands, small_islands) = self._categorize_islands()
         executor: futures.Executor = futures.ProcessPoolExecutor()
         # TODO: Handle exceptions raised in workers.
         # TODO: Add execution timeout.
-        n: int = 10
-        results = executor.map(
-            self._run_solution,
-            itertools.repeat(self._initial_size),
-            [self._rng.randint(0, constants.SEED_MAX) for _ in range(n)],
-            itertools.repeat(large_islands),
-            itertools.repeat(small_islands)
-        )
-        executor.shutdown()
-        highest_fitness: float = 0.0
-        for (result, solution) in results:
-            if result and solution.fitness > highest_fitness:
-                highest_fitness = solution.fitness
-                self._winner = solution
+        try:
+            while should_continue:
+                results = executor.map(
+                    self._run_solution,
+                    itertools.repeat(self._initial_size),
+                    [
+                        self._rng.randint(0, constants.SEED_MAX)
+                        for _ in range(batch_size)
+                    ],
+                    itertools.repeat(large_islands),
+                    itertools.repeat(small_islands)
+                )
+                for (result, solution) in results:
+                    if result and solution.fitness > self.fitness:
+                        self._winner = solution
+                iterations_run += batch_size
+                should_continue = yield (iterations_run, self.fitness)
+        finally:
+            executor.shutdown()
+        yield (iterations_run, self.fitness)
 
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
