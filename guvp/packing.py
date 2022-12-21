@@ -106,7 +106,11 @@ class Solution:
                         )
                     )
                 if island_placement is None:
-                    search_cell = self._advance_search_cell(search_cell)
+                    mask = island.mask_with_margin or island.mask
+                    search_cell = self._advance_search_cell(
+                        search_cell,
+                        (mask.width, mask.height)
+                    )
             if island_placement is None:
                 islands_remaining.append(island)
                 if self._rng.random() <= self._calculate_grow_chance():
@@ -134,22 +138,23 @@ class Solution:
 
     @property
     def scaling_factor(self) -> float:
-        return float(self._initial_size) / max(self._utilized_area[0],
-                                               self._utilized_area[1])
+        return float(self._initial_size) / max(*self._utilized_area)
 
     def _advance_search_cell(
             self,
-            search_cell: discrete.CellCoord
+            search_cell: discrete.CellCoord,
+            island_mask_dimensions: Tuple[int, int]
     ) -> discrete.CellCoord:
-        x: float = float(search_cell[0]) / (self._collision_mask.width - 1)
-        y: float = float(search_cell[1]) / (self._collision_mask.height - 1)
-        up_chance: float = \
-            math.sin(x ** 3 * math.pi * 0.5) \
-            * math.cos(y ** 2 * math.pi * 0.5)
+        (iw, ih) = island_mask_dimensions
         new_search_cell = search_cell.offset(1, 0)
-        if self._rng.random() <= up_chance \
-           or new_search_cell not in self._collision_mask:
+        # If search cell's x is OOB.
+        if new_search_cell not in self._collision_mask \
+           or new_search_cell[0] + iw >= self._collision_mask.width:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y + 1)
+        # This is the case where y of search cell is OOB.
+        if new_search_cell not in self._collision_mask \
+           or new_search_cell[1] + ih >= self._collision_mask.height:
+            new_search_cell = discrete.CellCoord.zero()
         return new_search_cell
 
     def _calculate_grow_chance(self) -> float:
@@ -286,8 +291,8 @@ class GridPacker:
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
+        scaling_factor: float = self._winner.scaling_factor
         for ip in self._winner.islands:
-            scaling_factor = self._winner.scaling_factor
             ip.write_uvs(bm, scaling_factor)
 
     def _categorize_islands(self) -> Tuple[List[continuous.Island],
