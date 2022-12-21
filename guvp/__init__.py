@@ -134,8 +134,7 @@ class GridUVPackOperator(bpy.types.Operator):
             # Use a random seed if seed prop is set to zero.
             random_seed: int = self.seed if self.seed != 0 \
                 else random.randint(0, constants.SEED_MAX)
-            if debug.is_debug():
-                print("Seed being used is: {}".format(random_seed))
+            debug.print_("Seed being used is: {}", random_seed)
             packer = packing.GridPacker(
                 initial_size=grid_size,
                 islands=[
@@ -157,34 +156,31 @@ class GridUVPackOperator(bpy.types.Operator):
             wm.progress_update(
                 int(float(iterations_run) / max_iterations * 10000)
             )
-            if debug.is_debug():
-                print("Batch: # of iterations {}, fitness {}".format(
-                    iterations_run,
-                    fitness
-                ))
+
+            debug.print_(
+                "Batch: # of iterations {}, fitness {}",
+                iterations_run,
+                fitness
+            )
             while iterations_run < max_iterations:
                 (iterations_run, fitness) = packer_coroutine.send(True)
                 wm.progress_update(
                     int(float(iterations_run) / max_iterations * 10000)
                 )
-                if debug.is_debug():
-                    print("Batch: # of iterations {}, fitness {}".format(
-                        iterations_run,
-                        fitness
-                    ))
+                debug.print_(
+                    "Batch: # of iterations {}, fitness {}",
+                    iterations_run,
+                    fitness
+                )
             packer_coroutine.send(False)
-            if debug.is_debug():
-                assert baseline_fitness is not None
-                print(
-                    "Baseline fitness is {0:0.2f}%".format(
-                        baseline_fitness * 100
-                    )
-                )
-                print(
-                    "Grid packer fitness is {0:0.2f}%".format(
-                        packer.fitness * 100
-                    )
-                )
+            debug.print_(
+                "Baseline fitness is {0:0.2f}%",
+                baseline_fitness * 100
+            )
+            debug.print_(
+                "Grid packer fitness is {0:0.2f}%",
+                packer.fitness * 100
+            )
             # TODO: Handle failure better.
             #       Ideally fitness should be better than the current
             #       UV configuration.

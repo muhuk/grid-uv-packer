@@ -60,6 +60,9 @@ class Solution:
             height=initial_size
         )
 
+    def __repr__(self):
+        return "<Solution(random_seed={})>".format(self.random_seed)
+
     @property
     def fitness(self) -> float:
         """Calculate fitness.  Return value between 0.0 - 1.0."""
@@ -193,11 +196,9 @@ class Solution:
         # Limit growing.
         max_size: int = self._initial_size * (2 ** constants.MAX_GROW_COUNT)
         if self._collision_mask.width >= max_size:
-            if debug.is_debug():
-                print("Cannot grow more.")
+            debug.print_("{!r} Cannot grow more.", self)
             return None
-        if debug.is_debug():
-            print("Growing")
+        debug.print_("{!r} Growing", self)
         # Create a mask with the new size & copy current mask's contents.
         new_mask = self._mask.copy(
             (0, 0, self._mask.width, self._mask.height)
@@ -253,9 +254,8 @@ class GridPacker:
         # until good enough results = g.send(True)
         # if good enough g.send(False) to finish.
         batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
+        debug.print_("batch size is {}.", batch_size)
         iterations_run: int = 0
-        if debug.is_debug():
-            print("batch size is {}.".format(batch_size))
         should_continue: bool = True
 
         (large_islands, small_islands) = self._categorize_islands()

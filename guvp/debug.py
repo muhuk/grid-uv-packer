@@ -26,3 +26,8 @@ def is_debug() -> bool:
     addon_prefs = \
         bpy.context.preferences.addons[constants.ADDON_NAME].preferences
     return addon_prefs.debug_mode
+
+
+def print_(fmt_str: str, *args, **kwargs) -> None:
+    if is_debug():
+        print(fmt_str.format(*args, **kwargs))
