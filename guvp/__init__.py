@@ -91,6 +91,13 @@ class GridUVPackOperator(bpy.types.Operator):
         max=1.0,
         precision=3
     )
+    max_iterations: bpy.props.IntProperty(    # type: ignore
+        name="Max Iterations",
+        description="Maximum number of iterations.",
+        default=constants.MAX_ITERATIONS_DEFAULT,
+        min=0,
+        max=constants.MAX_ITERATIONS_LIMIT
+    )
     seed: bpy.props.IntProperty(              # type: ignore
         name="Random Seed",
         description="Seed of the random generator.",
@@ -148,13 +155,12 @@ class GridUVPackOperator(bpy.types.Operator):
                 ],
                 random_seed=random_seed
             )
-            max_iterations: int = 85
             iterations_run: int = 0
             fitness: float = 0.0
             packer_coroutine = packer.run_generator()
             (iterations_run, fitness) = next(packer_coroutine)
             wm.progress_update(
-                int(float(iterations_run) / max_iterations * 10000)
+                int(float(iterations_run) / self.max_iterations * 10000)
             )
 
             debug.print_(
@@ -162,10 +168,10 @@ class GridUVPackOperator(bpy.types.Operator):
                 iterations_run,
                 fitness
             )
-            while iterations_run < max_iterations:
+            while iterations_run < self.max_iterations:
                 (iterations_run, fitness) = packer_coroutine.send(True)
                 wm.progress_update(
-                    int(float(iterations_run) / max_iterations * 10000)
+                    int(float(iterations_run) / self.max_iterations * 10000)
                 )
                 debug.print_(
                     "Batch: # of iterations {}, fitness {}",
