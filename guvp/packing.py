@@ -144,15 +144,17 @@ class Solution:
             search_cell: discrete.CellCoord,
             island_mask_dimensions: Tuple[int, int]
     ) -> discrete.CellCoord:
+        # Even though we are using the island mask dimensions
+        # and not the location of farthest non-empty cell it
+        # produces the correct result because empty cells in
+        # the island mask represent the margin.
         (iw, ih) = island_mask_dimensions
         new_search_cell = search_cell.offset(1, 0)
         # If search cell's x is OOB.
-        if new_search_cell not in self._collision_mask \
-           or new_search_cell[0] + iw >= self._collision_mask.width:
+        if new_search_cell[0] + iw >= self._collision_mask.width:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y + 1)
         # This is the case where y of search cell is OOB.
-        if new_search_cell not in self._collision_mask \
-           or new_search_cell[1] + ih >= self._collision_mask.height:
+        if new_search_cell[1] + ih >= self._collision_mask.height:
             new_search_cell = discrete.CellCoord.zero()
         return new_search_cell
 
