@@ -155,7 +155,7 @@ class Triangle2D:
             quad[0], quad[1], quad[2]
         ) or mathutils.geometry.intersect_tri_tri_2d(
             self.a, self.b, self.c,
-            quad[1], quad[2], quad[3]
+            quad[0], quad[2], quad[3]
         )
 
     @classmethod
@@ -216,16 +216,17 @@ def fill_mask(
             y_max: int = int(math.ceil(v_max / cell_size))
             for y in range(y_min, y_max):
                 for x in range(x_min, x_max):
-                    # a & b are cells's bottom left coords in UV space.
-                    a = float(x * cell_size)
-                    b = float(y * cell_size)
-                    quad: Tuple[Vector, Vector, Vector, Vector] = (
-                        Vector((a, b + cell_size)),
-                        Vector((a + cell_size, b + cell_size)),
-                        Vector((a, b)),
-                        Vector((a + cell_size, b))
-                    )
-                    if not mask[discrete.CellCoord(x, y)] \
-                       and face_tri.intersect_quad(quad):
-                        mask[discrete.CellCoord(x, y)] = True
+                    cell = discrete.CellCoord(x, y)
+                    if not mask[cell]:
+                        # a & b are cells's bottom left coords in UV space.
+                        a = float(x * cell_size)
+                        b = float(y * cell_size)
+                        quad: Tuple[Vector, Vector, Vector, Vector] = (
+                            Vector((a, b)),
+                            Vector((a, b + cell_size)),
+                            Vector((a + cell_size, b + cell_size)),
+                            Vector((a + cell_size, b))
+                        )
+                        if face_tri.intersect_quad(quad):
+                            mask[cell] = True
     return True
