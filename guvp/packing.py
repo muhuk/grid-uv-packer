@@ -190,7 +190,7 @@ class Solution:
         if island_bounds[3] > self._collision_mask.height:
             return CollisionResult.OUT_OF_BOUNDS
 
-        island_mask = ip.get_mask(
+        island_mask = ip.get_collision_mask(
             (self._collision_mask.width, self._collision_mask.height)
         )
         if (self._collision_mask & island_mask).any():
