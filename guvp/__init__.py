@@ -36,6 +36,7 @@ else:
     from contextlib import contextmanager
     from functools import reduce
     import random
+    import time
     from typing import (Iterable, List, Optional, Set)
     # blender
     import bpy                                                  # type: ignore
@@ -98,6 +99,13 @@ class GridUVPackOperator(bpy.types.Operator):
         min=0,
         max=constants.MAX_ITERATIONS_LIMIT
     )
+    max_runtime: bpy.props.IntProperty(       # type: ignore
+        name="Max Runtime",
+        description="Maximum time the calculation can take, in seconds.",
+        default=constants.MAX_RUNTIME_DEFAULT,
+        min=1,
+        max=constants.MAX_RUNTIME_LIMIT,
+    )
     seed: bpy.props.IntProperty(              # type: ignore
         name="Random Seed",
         description="Seed of the random generator.",
@@ -121,6 +129,7 @@ class GridUVPackOperator(bpy.types.Operator):
         # Size of one grid cell (square) in UV coordinate system.
         cell_size: float = 1.0 / grid_size
 
+        end_time_ns: int = time.time_ns() + self.max_runtime * 1_000_000_000
         with self._wm_context(context) as wm, \
              self._mesh_context(context) as (mesh, bm):
             wm.progress_update(1)
@@ -168,7 +177,8 @@ class GridUVPackOperator(bpy.types.Operator):
                 iterations_run,
                 fitness
             )
-            while iterations_run < self.max_iterations:
+            while iterations_run < self.max_iterations \
+                  and time.time_ns() < end_time_ns:
                 (iterations_run, fitness) = packer_coroutine.send(True)
                 wm.progress_update(
                     int(float(iterations_run) / self.max_iterations * 10000)
