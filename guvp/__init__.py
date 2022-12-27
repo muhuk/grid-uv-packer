@@ -84,6 +84,11 @@ class GridUVPackOperator(bpy.types.Operator):
             ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
         )
     )
+    rotate: bpy.props.BoolProperty(           # type: ignore
+        name="Rotate",                        # noqa: F821
+        description="Rotate islands for best fit.",
+        default=True
+    )
     margin: bpy.props.FloatProperty(          # type: ignore
         name="Margin",                        # noqa: F821
         description="Space between islands.",
