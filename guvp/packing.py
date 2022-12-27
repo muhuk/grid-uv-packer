@@ -38,7 +38,7 @@ CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
 # Rotation is CW, like in Blender.
-Rotation = enum.Enum('Rotation', 'NONE 90_DEGREES 180_DEGREES 270_DEGREES')
+Rotation = enum.Enum('Rotation', 'NONE DEGREES_90 DEGREES_180 DEGREES_270')
 
 
 class Solution:
@@ -329,10 +329,16 @@ class IslandPlacement:
     _island: continuous.Island
 
     def get_bounds(self) -> Tuple[int, int, int, int]:
-        return (self.offset.x,
-                self.offset.y,
-                self.offset.x + self._island.mask.width,
-                self.offset.y + self._island.mask.height)
+        if self.rotation in (Rotation.NONE, Rotation.DEGREES_180):
+            return (self.offset.x,
+                    self.offset.y,
+                    self.offset.x + self._island.mask.width,
+                    self.offset.y + self._island.mask.height)
+        else:
+            return (self.offset.x,
+                    self.offset.y,
+                    self.offset.x + self._island.mask.height,
+                    self.offset.y + self._island.mask.width)
 
     def get_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
         return self._island.mask.copy(
