@@ -37,6 +37,10 @@ from guvp import (constants, continuous, debug, discrete)
 CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
+# Rotation is CW, like in Blender.
+Rotation = enum.Enum('Rotation', 'NONE 90_DEGREES 180_DEGREES 270_DEGREES')
+
+
 class Solution:
     """Store a set of placements."""
     def __init__(
@@ -89,7 +93,8 @@ class Solution:
                 placement_retries_left -= 1
                 island_placement = IslandPlacement(
                     offset=search_cell,
-                    island=island
+                    rotation=Rotation.NONE,
+                    _island=island
                 )
                 collision_result = self._check_collision(island_placement)
                 if collision_result is CollisionResult.NO:
@@ -319,33 +324,31 @@ class GridPacker:
 @dataclass(frozen=True)
 class IslandPlacement:
     offset: discrete.CellCoord
-    # TODO: Add rotation support.
-    # rotation: Enum
-    #
-    #   see: https://docs.python.org/3/library/enum.html
-    island: continuous.Island
+    rotation: Rotation
+
+    _island: continuous.Island
 
     def get_bounds(self) -> Tuple[int, int, int, int]:
         return (self.offset.x,
                 self.offset.y,
-                self.offset.x + self.island.mask.width,
-                self.offset.y + self.island.mask.height)
+                self.offset.x + self._island.mask.width,
+                self.offset.y + self._island.mask.height)
 
     def get_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
-        return self.island.mask.copy(
+        return self._island.mask.copy(
             (self.offset.x,
              self.offset.y,
-             bounds[0] - (self.offset.x + self.island.mask.width),
-             bounds[1] - (self.offset.y + self.island.mask.height))
+             bounds[0] - (self.offset.x + self._island.mask.width),
+             bounds[1] - (self.offset.y + self._island.mask.height))
         )
 
     def get_collision_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
-        if self.island.mask_with_margin is None:
+        if self._island.mask_with_margin is None:
             return self.get_mask(bounds)
         else:
-            w: int = self.island.mask_with_margin.width
-            h: int = self.island.mask_with_margin.height
-            return self.island.mask_with_margin.copy(
+            w: int = self._island.mask_with_margin.width
+            h: int = self._island.mask_with_margin.height
+            return self._island.mask_with_margin.copy(
                 (self.offset.x,
                  self.offset.y,
                  bounds[0] - (self.offset.x + w),
@@ -353,4 +356,4 @@ class IslandPlacement:
             )
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
-        self.island.write_uvs(bm, self.offset, scaling_factor)
+        self._island.write_uvs(bm, self.offset, scaling_factor)
