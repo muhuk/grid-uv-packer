@@ -341,25 +341,33 @@ class IslandPlacement:
                     self.offset.y + self._island.mask.width)
 
     def get_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
-        return self._island.mask.copy(
+        mask = self._rotate_mask(self._island.mask)
+        return mask.copy(
             (self.offset.x,
              self.offset.y,
-             bounds[0] - (self.offset.x + self._island.mask.width),
-             bounds[1] - (self.offset.y + self._island.mask.height))
+             bounds[0] - (self.offset.x + mask.width),
+             bounds[1] - (self.offset.y + mask.height))
         )
 
     def get_collision_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
         if self._island.mask_with_margin is None:
             return self.get_mask(bounds)
         else:
-            w: int = self._island.mask_with_margin.width
-            h: int = self._island.mask_with_margin.height
-            return self._island.mask_with_margin.copy(
+            mask = self._rotate_mask(self._island.mask_with_margin)
+            return mask.copy(
                 (self.offset.x,
                  self.offset.y,
-                 bounds[0] - (self.offset.x + w),
-                 bounds[1] - (self.offset.y + h))
+                 bounds[0] - (self.offset.x + mask.width),
+                 bounds[1] - (self.offset.y + mask.height))
             )
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
         self._island.write_uvs(bm, self.offset, scaling_factor)
+
+    def _rotate_mask(self, mask: discrete.Grid) -> discrete.Grid:
+        if self.rotation is Rotation.NONE:
+            return mask
+        else:
+            raise RuntimeError(
+                "Unrecognized rotation {!r}".format(self.rotation)
+            )
