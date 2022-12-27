@@ -17,6 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import enum
+
 ADDON_NAME = __package__
 
 DEBUG_MODE_DEFAULT: bool = False
@@ -50,3 +52,11 @@ MAX_RUNTIME_LIMIT = 3600  # 1 hour
 SEARCH_START_RESET_CHANCE = 0.333
 
 SEED_MAX = 2 ** 31 - 1
+
+# Rotation is CW, like in Blender.
+Rotation = enum.Enum(
+    'Rotation',
+    {'NONE': 0.0,
+     'DEGREES_90': 90.0,
+     'DEGREES_180': 180.0,
+     'DEGREES_270': 270.0})

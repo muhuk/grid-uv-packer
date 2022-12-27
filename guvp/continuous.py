@@ -28,11 +28,11 @@ from typing import (
     Type
 )
 
-import bmesh                  # type: ignore
-from mathutils import Vector  # type: ignore
-import mathutils.geometry     # type: ignore
+import bmesh                           # type: ignore
+from mathutils import (Euler, Vector)  # type: ignore
+import mathutils.geometry              # type: ignore
 
-from guvp import discrete
+from guvp import (constants, discrete)
 
 
 FaceUVs = Dict[int, Tuple[float, float]]
@@ -81,18 +81,25 @@ class Island:
             self,
             bm: bmesh.types.BMesh,
             offset: discrete.CellCoord,
+            rotation: constants.Rotation,
             scaling_factor: float
     ) -> None:
+        rotation_euler: Euler = Euler((0.0, 0.0, math.radians(rotation.value)))
+        rotation_offset: Vector = Vector((0.0, 0.0, 0.0))
         uv_ident = bm.loops.layers.uv.verify()
         offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
                 assert face_loop.index in self.uvs[face_id]
-                face_loop[uv_ident].uv = Vector(
+                uv = Vector(
                     self.uvs[face_id][face_loop.index]
-                )
-                face_loop[uv_ident].uv += offset_vec
-                face_loop[uv_ident].uv *= scaling_factor
+                ).to_3d()
+                uv.rotate(rotation_euler)
+                uv += rotation_offset
+                uv = uv.to_2d()
+                uv += offset_vec
+                uv *= scaling_factor
+                face_loop[uv_ident].uv = uv
 
     @staticmethod
     def _calculate_uvs_and_size(

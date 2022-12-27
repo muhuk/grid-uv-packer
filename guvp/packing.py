@@ -37,10 +37,6 @@ from guvp import (constants, continuous, debug, discrete)
 CollisionResult = enum.Enum('CollisionResult', 'NO YES OUT_OF_BOUNDS')
 
 
-# Rotation is CW, like in Blender.
-Rotation = enum.Enum('Rotation', 'NONE DEGREES_90 DEGREES_180 DEGREES_270')
-
-
 class Solution:
     """Store a set of placements."""
     def __init__(
@@ -93,7 +89,7 @@ class Solution:
                 placement_retries_left -= 1
                 island_placement = IslandPlacement(
                     offset=search_cell,
-                    rotation=Rotation.NONE,
+                    rotation=constants.Rotation.NONE,
                     _island=island
                 )
                 collision_result = self._check_collision(island_placement)
@@ -324,12 +320,13 @@ class GridPacker:
 @dataclass(frozen=True)
 class IslandPlacement:
     offset: discrete.CellCoord
-    rotation: Rotation
+    rotation: constants.Rotation
 
     _island: continuous.Island
 
     def get_bounds(self) -> Tuple[int, int, int, int]:
-        if self.rotation in (Rotation.NONE, Rotation.DEGREES_180):
+        if self.rotation in (constants.Rotation.NONE,
+                             constants.Rotation.DEGREES_180):
             return (self.offset.x,
                     self.offset.y,
                     self.offset.x + self._island.mask.width,
@@ -362,10 +359,10 @@ class IslandPlacement:
             )
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
-        self._island.write_uvs(bm, self.offset, scaling_factor)
+        self._island.write_uvs(bm, self.offset, self.rotation, scaling_factor)
 
     def _rotate_mask(self, mask: discrete.Grid) -> discrete.Grid:
-        if self.rotation is Rotation.NONE:
+        if self.rotation is constants.Rotation.NONE:
             return mask
         else:
             raise RuntimeError(
