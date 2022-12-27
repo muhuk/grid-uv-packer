@@ -60,3 +60,9 @@ Rotation = enum.Enum(
      'DEGREES_90': 90.0,
      'DEGREES_180': 180.0,
      'DEGREES_270': 270.0})
+ALL_ROTATIONS = (
+    Rotation.NONE,
+    Rotation.DEGREES_90,
+    Rotation.DEGREES_180,
+    Rotation.DEGREES_270
+)

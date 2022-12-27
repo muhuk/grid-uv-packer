@@ -84,8 +84,25 @@ class Island:
             rotation: constants.Rotation,
             scaling_factor: float
     ) -> None:
-        rotation_euler: Euler = Euler((0.0, 0.0, math.radians(rotation.value)))
-        rotation_offset: Vector = Vector((0.0, 0.0, 0.0))
+        rotation_euler: Euler = Euler(
+            (0.0, 0.0, math.radians(-rotation.value))
+        )
+        rotation_offset: Vector
+        w: float = self.mask.width * self.cell_size
+        h: float = self.mask.height * self.cell_size
+        if rotation is constants.Rotation.NONE:
+            rotation_offset = Vector((0.0, 0.0, 0.0))
+        elif rotation is constants.Rotation.DEGREES_90:
+            rotation_offset = Vector((0.0, w, 0.0))
+        elif rotation is constants.Rotation.DEGREES_180:
+            rotation_offset = Vector((w, h, 0.0))
+        elif rotation is constants.Rotation.DEGREES_270:
+            rotation_offset = Vector((h, 0.0, 0.0))
+        else:
+            raise RuntimeError(
+                "Unrecognized rotation {!r}".format(self.rotation)
+            )
+        del w, h
         uv_ident = bm.loops.layers.uv.verify()
         offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:

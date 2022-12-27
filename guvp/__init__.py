@@ -167,6 +167,7 @@ class GridUVPackOperator(bpy.types.Operator):
                     )
                     for face_ids in island_face_ids
                 ],
+                rotate=self.rotate,
                 random_seed=random_seed
             )
             iterations_run: int = 0

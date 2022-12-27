@@ -26,7 +26,7 @@ import itertools
 import multiprocessing
 import random
 import statistics
-from typing import (List, Generator, Tuple, Optional)
+from typing import (List, Generator, Sequence, Tuple, Optional)
 
 import bmesh                  # type: ignore
 import numpy as np            # type: ignore
@@ -42,11 +42,13 @@ class Solution:
     def __init__(
             self,
             initial_size: int,
+            rotations: Sequence[constants.Rotation],
             random_seed: int
     ) -> None:
         self.islands: List[IslandPlacement] = []
         self.random_seed = random_seed
         self._initial_size = initial_size
+        self._rotations = rotations
         self._rng = random.Random(random_seed)
         self._search_start = discrete.CellCoord.zero()
         self._utilized_area = (0, 0)
@@ -89,7 +91,7 @@ class Solution:
                 placement_retries_left -= 1
                 island_placement = IslandPlacement(
                     offset=search_cell,
-                    rotation=constants.Rotation.NONE,
+                    rotation=self._rng.sample(self._rotations, 1)[0],
                     _island=island
                 )
                 collision_result = self._check_collision(island_placement)
@@ -239,10 +241,12 @@ class GridPacker:
             self,
             initial_size: int,
             islands: List[continuous.Island],
+            rotate: bool = False,
             random_seed: Optional[int] = None
     ) -> None:
         self._initial_size = initial_size
         self._islands = islands
+        self._rotate: bool = rotate
         self._rng = random.Random(random_seed)
         self._winner: Optional[Solution] = None
 
@@ -261,6 +265,8 @@ class GridPacker:
         # until good enough results = g.send(True)
         # if good enough g.send(False) to finish.
         batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
+        rotations = constants.ALL_ROTATIONS if self._rotate \
+            else (constants.Rotation.NONE,)
         debug.print_("batch size is {}.", batch_size)
         iterations_run: int = 0
         should_continue: bool = True
@@ -274,6 +280,7 @@ class GridPacker:
                 results = executor.map(
                     self._run_solution,
                     itertools.repeat(self._initial_size),
+                    itertools.repeat(rotations),
                     [
                         self._rng.randint(0, constants.SEED_MAX)
                         for _ in range(batch_size)
@@ -310,10 +317,11 @@ class GridPacker:
     @staticmethod
     def _run_solution(
             initial_size: int,
+            rotations: Sequence[constants.Rotation],
             seed: int,
             *grouped_islands: List[continuous.Island]
     ) -> Tuple[bool, Solution]:
-        solution: Solution = Solution(initial_size, seed)
+        solution: Solution = Solution(initial_size, rotations, seed)
         return solution.pack_grouped(*grouped_islands), solution
 
 
@@ -362,8 +370,15 @@ class IslandPlacement:
         self._island.write_uvs(bm, self.offset, self.rotation, scaling_factor)
 
     def _rotate_mask(self, mask: discrete.Grid) -> discrete.Grid:
+        # numpy rotation is CCW, we are using CW rotation.
         if self.rotation is constants.Rotation.NONE:
             return mask
+        elif self.rotation is constants.Rotation.DEGREES_90:
+            return discrete.Grid(np.rot90(mask.cells, 3))
+        elif self.rotation is constants.Rotation.DEGREES_180:
+            return discrete.Grid(np.rot90(mask.cells, 2))
+        elif self.rotation is constants.Rotation.DEGREES_270:
+            return discrete.Grid(np.rot90(mask.cells, 1))
         else:
             raise RuntimeError(
                 "Unrecognized rotation {!r}".format(self.rotation)
