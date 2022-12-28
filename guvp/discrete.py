@@ -27,6 +27,8 @@ from typing import (
 
 import numpy as np            # type: ignore
 
+from guvp import constants
+
 
 class CellCoord(NamedTuple):
     x: int
@@ -113,6 +115,21 @@ class Grid:
                 print('>' if row == self.height - 1 else '')
         else:
             print("Grid is too large, cannot draw to console.")
+
+    def rotate(self, rotation: constants.Rotation) -> Grid:
+        # numpy rotation is CCW, we are using CW rotation.
+        if rotation is constants.Rotation.NONE:
+            return Grid(self.cells)
+        elif rotation is constants.Rotation.DEGREES_90:
+            return Grid(np.rot90(self.cells, 3))
+        elif rotation is constants.Rotation.DEGREES_180:
+            return Grid(np.rot90(self.cells, 2))
+        elif rotation is constants.Rotation.DEGREES_270:
+            return Grid(np.rot90(self.cells, 1))
+        else:
+            raise RuntimeError(
+                "Unrecognized rotation {!r}".format(rotation)
+            )
 
     @classmethod
     def empty(cls, width: int, height: int):

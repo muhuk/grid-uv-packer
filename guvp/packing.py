@@ -346,7 +346,7 @@ class IslandPlacement:
                     self.offset.y + self._island.mask.width)
 
     def get_mask(self, bounds: Tuple[int, int]) -> discrete.Grid:
-        mask = self._rotate_mask(self._island.mask)
+        mask = self._island.mask.rotate(self.rotation)
         return mask.copy(
             (self.offset.x,
              self.offset.y,
@@ -358,7 +358,7 @@ class IslandPlacement:
         if self._island.mask_with_margin is None:
             return self.get_mask(bounds)
         else:
-            mask = self._rotate_mask(self._island.mask_with_margin)
+            mask = self._island.mask_with_margin.rotate(self.rotation)
             return mask.copy(
                 (self.offset.x,
                  self.offset.y,
@@ -368,18 +368,3 @@ class IslandPlacement:
 
     def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
         self._island.write_uvs(bm, self.offset, self.rotation, scaling_factor)
-
-    def _rotate_mask(self, mask: discrete.Grid) -> discrete.Grid:
-        # numpy rotation is CCW, we are using CW rotation.
-        if self.rotation is constants.Rotation.NONE:
-            return mask
-        elif self.rotation is constants.Rotation.DEGREES_90:
-            return discrete.Grid(np.rot90(mask.cells, 3))
-        elif self.rotation is constants.Rotation.DEGREES_180:
-            return discrete.Grid(np.rot90(mask.cells, 2))
-        elif self.rotation is constants.Rotation.DEGREES_270:
-            return discrete.Grid(np.rot90(mask.cells, 1))
-        else:
-            raise RuntimeError(
-                "Unrecognized rotation {!r}".format(self.rotation)
-            )
