@@ -116,6 +116,10 @@ class Grid:
         else:
             print("Grid is too large, cannot draw to console.")
 
+    @property
+    def active_cells(self) -> int:
+        return np.count_nonzero(self.cells)
+
     def rotate(self, rotation: constants.Rotation) -> Grid:
         # numpy rotation is CCW, we are using CW rotation.
         if rotation is constants.Rotation.NONE:

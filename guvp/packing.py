@@ -29,7 +29,6 @@ import statistics
 from typing import (List, Generator, Sequence, Tuple, Optional)
 
 import bmesh                  # type: ignore
-import numpy as np            # type: ignore
 
 from guvp import (constants, continuous, debug, discrete)
 
@@ -68,10 +67,8 @@ class Solution:
     def fitness(self) -> float:
         """Calculate fitness.  Return value between 0.0 - 1.0."""
         size = max(*self._utilized_area)
-        # Don't forget to add 1 to the end index.
-        ones = np.count_nonzero(self._mask.cells[0:size + 1, 0:size + 1])
-        # TODO: use a function on Grid instead of accessing cells directly.
-        return float(ones) / (size * size) if size > 0 else 0.0
+        active: float = float(self._mask.active_cells)
+        return active / (size * size) if size > 0 else 0.0
 
     def pack(self, islands_to_place: List[continuous.Island]) -> bool:
         islands_remaining = deque(islands_to_place)
