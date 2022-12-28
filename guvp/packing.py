@@ -225,12 +225,12 @@ class Solution:
         )
 
     def _write_island_to_mask(self, ip: IslandPlacement) -> None:
-        self._mask.cells |= ip.get_mask(
+        self._mask.combine(ip.get_mask(
             (self._mask.width, self._mask.height)
-        ).cells
-        self._collision_mask.cells |= ip.get_collision_mask(
+        ))
+        self._collision_mask.combine(ip.get_collision_mask(
             (self._collision_mask.width, self._collision_mask.height)
-        ).cells
+        ))
 
 
 class GridPacker:

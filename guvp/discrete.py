@@ -86,6 +86,11 @@ class Grid:
         (column, row) = key
         self.cells[(row, column)] = value
 
+    def combine(self, other: Grid) -> None:
+        if self.width != other.width or self.height != other.height:
+            raise ValueError("Grids are not same sized.")
+        self.cells |= other.cells
+
     def copy(self, margins: Tuple[int, int, int, int] = (0, 0, 0, 0)) -> Grid:
         (before_x, before_y, after_x, after_y) = margins
         cells = np.pad(self.cells,
