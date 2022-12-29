@@ -16,7 +16,16 @@ grid-uv-packer is released with [GPL license](./COPYING.txt), same as
 
 ## Installation
 
-**TBD**
+- Download the source zip from [releases
+  page](https://github.com/muhuk/grid-uv-packer/releases).  You need to click
+  to expand `Assets` under the correct version and download the file named
+  `guvp-#.#.zip` (where #.# is the version number)
+- In Blender, open `Preferences` editor (`Edit -> Preferences`
+  from the menu).
+- Click `Install...` button and choose the zip file you have downloaded.
+- Once the addon is installed, you **must** still enable it manually in
+  `Preferences` view.  It is not automatically enabled.
+- After installation, you can delete the zip file you have downloaded.
 
 ## Usage
 
