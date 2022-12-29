@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3] - 2022-12-29
+
+### Added
+
+- Added setting for maximum number of iterations.
+- Added setting for maximum run time.  Set this to `0` to disable run time
+  limit.
+- Implemented island rotation.  This setting is on by default, you can
+  distable it by unchecking `rotate`.
+
+### Changed
+
+- Minimum required version of Blender is now `3.4.0`.
+
 ## [0.2] - 2022-12-15
 
 ### Added
@@ -24,5 +38,6 @@
 ### Added
 - Initial proof of concept release.  Not ready for production use.
 
+[0.2]: https://github.com/muhuk/grid-uv-packer/compare/v0.2...v0.3
 [0.2]: https://github.com/muhuk/grid-uv-packer/compare/v0.1...v0.2
 [0.1]: https://github.com/muhuk/grid-uv-packer/releases/tag/v0.1
