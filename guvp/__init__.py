@@ -134,9 +134,10 @@ class GridUVPackOperator(bpy.types.Operator):
         # Size of one grid cell (square) in UV coordinate system.
         cell_size: float = 1.0 / grid_size
 
+        start_time_ns: int = time.time_ns()
         end_time_ns: Optional[int] = None
         if self.max_runtime > 0:
-            end_time_ns = time.time_ns() + \
+            end_time_ns = start_time_ns + \
                 self.max_runtime * 1_000_000_000
 
         with self._wm_context(context) as wm, \
@@ -217,6 +218,10 @@ class GridUVPackOperator(bpy.types.Operator):
                 bm.to_mesh(mesh)
                 # Back into EDIT mode.
                 bpy.ops.object.editmode_toggle()
+        debug.print_(
+            "Total time: {:.3f}",
+            (time.time_ns() - start_time_ns) / 1_000_000_000
+        )
         return {'FINISHED'}
 
     def invoke(self, context, event):
