@@ -7,6 +7,8 @@ feedback is welcome.**
 
 A pure-Python UV packer that packs irregularly shaped UV islands efficiently.
 
+![example](./img/example.png)
+
 grid-uv-packer is released with [GPL license](./COPYING.txt), same as
 [Blender](https://www.blender.org/about/license/)
 
