@@ -1,5 +1,7 @@
 # Grid UV Packer
 
+![grid-uv-packer logo](./img/grid-uv-packer-logo.png)
+
 **This addon is experimental.  Feel free to download and test it.  Your
 feedback is welcome.**
 
