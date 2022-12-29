@@ -101,14 +101,14 @@ class GridUVPackOperator(bpy.types.Operator):
         name="Max Iterations",
         description="Maximum number of iterations.",
         default=constants.MAX_ITERATIONS_DEFAULT,
-        min=0,
+        min=1,
         max=constants.MAX_ITERATIONS_LIMIT
     )
     max_runtime: bpy.props.IntProperty(       # type: ignore
         name="Max Runtime",
         description="Maximum time the calculation can take, in seconds.",
         default=constants.MAX_RUNTIME_DEFAULT,
-        min=1,
+        min=0,
         max=constants.MAX_RUNTIME_LIMIT,
     )
     seed: bpy.props.IntProperty(              # type: ignore
@@ -134,7 +134,11 @@ class GridUVPackOperator(bpy.types.Operator):
         # Size of one grid cell (square) in UV coordinate system.
         cell_size: float = 1.0 / grid_size
 
-        end_time_ns: int = time.time_ns() + self.max_runtime * 1_000_000_000
+        end_time_ns: Optional[int] = None
+        if self.max_runtime > 0:
+            end_time_ns = time.time_ns() + \
+                self.max_runtime * 1_000_000_000
+
         with self._wm_context(context) as wm, \
              self._mesh_context(context) as (mesh, bm):
             wm.progress_update(1)
@@ -184,7 +188,7 @@ class GridUVPackOperator(bpy.types.Operator):
                 fitness
             )
             while iterations_run < self.max_iterations \
-                  and time.time_ns() < end_time_ns:
+                  and (end_time_ns is None or time.time_ns() < end_time_ns):
                 (iterations_run, fitness) = packer_coroutine.send(True)
                 wm.progress_update(
                     int(float(iterations_run) / self.max_iterations * 10000)
