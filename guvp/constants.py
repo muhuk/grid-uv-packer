@@ -33,10 +33,10 @@ GROW_AREA_RATIO = 0.85
 GROW_BASE_CHANCE = 0.15
 
 # Grow change if the utilized area is closer to a rectangle.
-GROW_REGULARITY_CHANCE = -0.25
+GROW_ASPECT_RATIO_CHANCE = -0.25
 
 # What is the threshold to consider a rectangle-like fill.
-GROW_REGULARITY_RATIO = 0.667
+GROW_ASPECT_RATIO_LIMIT = 0.667
 
 MAX_GROW_COUNT = 2
 

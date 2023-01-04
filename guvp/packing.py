@@ -174,8 +174,8 @@ class Solution:
             if utilized_x != 0.0 and utilized_y != 0.0 else 1.0
         if ratio > 1.0:
             ratio = 1.0 / ratio
-        if ratio <= constants.GROW_REGULARITY_RATIO:
-            grow_chance += constants.GROW_REGULARITY_CHANCE
+        if ratio <= constants.GROW_ASPECT_RATIO_LIMIT:
+            grow_chance += constants.GROW_ASPECT_RATIO_CHANCE
         del ratio
         return max(0.0, min(grow_chance, 1.0))
 
