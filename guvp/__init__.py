@@ -175,31 +175,37 @@ class GridUVPackOperator(bpy.types.Operator):
                 rotate=self.rotate,
                 random_seed=random_seed
             )
-            iterations_run: int = 0
-            fitness: float = 0.0
-            packer_coroutine = packer.run_generator()
-            (iterations_run, fitness) = next(packer_coroutine)
-            wm.progress_update(
-                int(float(iterations_run) / self.max_iterations * 10000)
-            )
 
-            debug.print_(
-                "Batch: # of iterations {}, fitness {}",
-                iterations_run,
-                fitness
-            )
-            while iterations_run < self.max_iterations \
-                  and (end_time_ns is None or time.time_ns() < end_time_ns):
-                (iterations_run, fitness) = packer_coroutine.send(True)
+            if self.max_iterations == 1:
+                debug.print_("Running a single iteration.")
+                packer.run_single()
+            else:
+                iterations_run: int = 0
+                fitness: float = 0.0
+                packer_coroutine = packer.run_generator()
+                (iterations_run, fitness) = next(packer_coroutine)
                 wm.progress_update(
                     int(float(iterations_run) / self.max_iterations * 10000)
                 )
+
                 debug.print_(
                     "Batch: # of iterations {}, fitness {}",
                     iterations_run,
                     fitness
                 )
-            packer_coroutine.send(False)
+                while iterations_run < self.max_iterations \
+                      and (end_time_ns is None or time.time_ns() < end_time_ns):
+                    (iterations_run, fitness) = packer_coroutine.send(True)
+                    wm.progress_update(
+                        int(float(iterations_run) / self.max_iterations * 10000)
+                    )
+                    debug.print_(
+                        "Batch: # of iterations {}, fitness {}",
+                        iterations_run,
+                        fitness
+                    )
+                packer_coroutine.send(False)
+
             debug.print_(
                 "Baseline fitness is {0:0.2f}%",
                 baseline_fitness * 100

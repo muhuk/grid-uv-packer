@@ -294,6 +294,15 @@ class GridPacker:
             executor.shutdown()
         yield (iterations_run, self.fitness)
 
+    def run_single(self) -> None:
+        rotations = constants.ALL_ROTATIONS if self._rotate \
+            else (constants.Rotation.NONE,)
+        (large_islands, small_islands) = self._categorize_islands()
+        seed = self._rng.randint(0, constants.SEED_MAX)
+        solution: Solution = Solution(self._initial_size, rotations, seed)
+        if solution.pack_grouped(large_islands, small_islands):
+            self._winner = solution
+
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
