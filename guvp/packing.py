@@ -144,6 +144,11 @@ class Solution:
             search_cell: discrete.CellCoord,
             island_mask_dimensions: Tuple[int, int]
     ) -> discrete.CellCoord:
+        max_width: int = 1
+        if self._aspect_ratio() > constants.ADVANCE_ASPECT_RATIO_MAX:
+            max_width = self._utilized_area[1]
+        else:
+            max_width = self._collision_mask.width
         # Even though we are using the island mask dimensions
         # and not the location of farthest non-empty cell it
         # produces the correct result because empty cells in
@@ -151,7 +156,7 @@ class Solution:
         (iw, ih) = island_mask_dimensions
         new_search_cell = search_cell.offset(1, 0)
         # If search cell's x is OOB.
-        if new_search_cell[0] + iw >= self._collision_mask.width:
+        if new_search_cell[0] + iw >= max_width:
             new_search_cell = discrete.CellCoord(x=0, y=search_cell.y + 1)
         # This is the case where y of search cell is OOB.
         if new_search_cell[1] + ih >= self._collision_mask.height:
@@ -160,8 +165,7 @@ class Solution:
 
     def _aspect_ratio(self) -> float:
         (x, y) = self._utilized_area
-        ratio: float = float(x) / float(y) if x != 0 and y != 0 else 1.0
-        return ratio if ratio <= 1.0 else 1.0 / ratio
+        return float(x) / float(y) if x != 0 and y != 0 else 1.0
 
     def _calculate_grow_chance(self) -> float:
         grow_chance: float = constants.GROW_BASE_CHANCE
@@ -175,8 +179,11 @@ class Solution:
             grow_chance += constants.GROW_AREA_CHANCE
         del w, h
         # Grow only if utilized area is rectangular.
-        if self._aspect_ratio() <= constants.GROW_ASPECT_RATIO_LIMIT:
+        ratio: float = self._aspect_ratio()
+        ratio = ratio if ratio <= 1.0 else 1 / ratio
+        if ratio <= constants.GROW_ASPECT_RATIO_LIMIT:
             grow_chance += constants.GROW_ASPECT_RATIO_CHANCE
+        del ratio
         return max(0.0, min(grow_chance, 1.0))
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:

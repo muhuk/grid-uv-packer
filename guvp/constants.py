@@ -21,6 +21,9 @@ import enum
 
 ADDON_NAME = __package__
 
+# Utilized area width/height ration should not exceed this.
+ADVANCE_ASPECT_RATIO_MAX = 1.05
+
 DEBUG_MODE_DEFAULT: bool = False
 
 # Grow chance if utilized area is too big.
@@ -49,7 +52,7 @@ MAX_PLACEMENT_RETRIES = 100_000
 MAX_RUNTIME_DEFAULT = 90
 MAX_RUNTIME_LIMIT = 3600  # 1 hour
 
-SEARCH_START_RESET_CHANCE = 0.333
+SEARCH_START_RESET_CHANCE = 0.05
 
 SEED_MAX = 2 ** 31 - 1
 
