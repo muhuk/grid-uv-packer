@@ -23,6 +23,7 @@ from concurrent import futures
 from dataclasses import dataclass
 import enum
 import itertools
+import math
 import multiprocessing
 import random
 import statistics
@@ -275,7 +276,7 @@ class GridPacker:
         iterations_run: int = 0
         should_continue: bool = True
 
-        grouped_islands = self._categorize_islands()
+        grouped_islands = self._group_islands()
         executor: futures.Executor = futures.ProcessPoolExecutor()
         # TODO: Handle exceptions raised in workers.
         # TODO: Add execution timeout.
@@ -305,7 +306,7 @@ class GridPacker:
             else (constants.Rotation.NONE,)
         seed = self._rng.randint(0, constants.SEED_MAX)
         solution: Solution = Solution(self._initial_size, rotations, seed)
-        if solution.pack_grouped(*self._categorize_islands()):
+        if solution.pack_grouped(*self._group_islands()):
             self._winner = solution
 
     def write(self, bm: bmesh.types.BMesh) -> None:
@@ -315,18 +316,34 @@ class GridPacker:
         for ip in self._winner.islands:
             ip.write_uvs(bm, scaling_factor)
 
-    def _categorize_islands(self) -> List[List[continuous.Island]]:
-        debug.print_("Island count is {}", len(self._islands))
-        # We need at least 2 islands for statistics functions to work.
-        if len(self._islands) <= 10:
+    def _group_islands(self) -> List[List[continuous.Island]]:
+        if len(self._islands) <= 20:
             return [self._islands]
-        island_sizes: List[int] = sorted([len(i.mask) for i in self._islands])
-        median_size: int = statistics.median_low(island_sizes)
-        large_islands = [i for i in self._islands if len(i.mask) > median_size]
-        small_islands = [
-            i for i in self._islands if len(i.mask) <= median_size
-        ]
-        return [large_islands, small_islands]
+        result = []
+        total_area: int = sum([len(i.mask) for i in self._islands])
+        islands_sorted: List[continuous.Island] = list(sorted(
+            self._islands,
+            key=lambda i: len(i.mask),
+            reverse=True
+        ))
+        group_count: int = min(int(math.log(len(self._islands), 2)) - 2, 10)
+        assert group_count >= 2
+        group_area_limit = total_area / group_count
+        for _ in range(group_count - 1):
+            group_area_total = 0
+            group_islands = []
+            while group_area_total < group_area_limit:
+                island = islands_sorted.pop(0)
+                group_islands.append(island)
+                group_area_total += len(island.mask)
+            result.append(group_islands)
+        result.append(islands_sorted[:])
+        debug.print_(
+            "groups = {!r}",
+            list(map(len, result))
+        )
+        assert sum(map(len, result)) == len(self._islands)
+        return result
 
     @staticmethod
     def _run_solution(
