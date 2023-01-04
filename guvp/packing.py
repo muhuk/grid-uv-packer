@@ -275,7 +275,7 @@ class GridPacker:
         iterations_run: int = 0
         should_continue: bool = True
 
-        (large_islands, small_islands) = self._categorize_islands()
+        grouped_islands = self._categorize_islands()
         executor: futures.Executor = futures.ProcessPoolExecutor()
         # TODO: Handle exceptions raised in workers.
         # TODO: Add execution timeout.
@@ -289,8 +289,7 @@ class GridPacker:
                         self._rng.randint(0, constants.SEED_MAX)
                         for _ in range(batch_size)
                     ],
-                    itertools.repeat(large_islands),
-                    itertools.repeat(small_islands)
+                    *[itertools.repeat(g) for g in grouped_islands]
                 )
                 for (result, solution) in results:
                     if result and solution.fitness > self.fitness:
@@ -304,10 +303,9 @@ class GridPacker:
     def run_single(self) -> None:
         rotations = constants.ALL_ROTATIONS if self._rotate \
             else (constants.Rotation.NONE,)
-        (large_islands, small_islands) = self._categorize_islands()
         seed = self._rng.randint(0, constants.SEED_MAX)
         solution: Solution = Solution(self._initial_size, rotations, seed)
-        if solution.pack_grouped(large_islands, small_islands):
+        if solution.pack_grouped(*self._categorize_islands()):
             self._winner = solution
 
     def write(self, bm: bmesh.types.BMesh) -> None:
@@ -317,19 +315,18 @@ class GridPacker:
         for ip in self._winner.islands:
             ip.write_uvs(bm, scaling_factor)
 
-    def _categorize_islands(self) -> Tuple[List[continuous.Island],
-                                           List[continuous.Island]]:
+    def _categorize_islands(self) -> List[List[continuous.Island]]:
         debug.print_("Island count is {}", len(self._islands))
         # We need at least 2 islands for statistics functions to work.
         if len(self._islands) <= 10:
-            return (self._islands, [])
+            return [self._islands]
         island_sizes: List[int] = sorted([len(i.mask) for i in self._islands])
         median_size: int = statistics.median_low(island_sizes)
         large_islands = [i for i in self._islands if len(i.mask) > median_size]
         small_islands = [
             i for i in self._islands if len(i.mask) <= median_size
         ]
-        return (large_islands, small_islands)
+        return [large_islands, small_islands]
 
     @staticmethod
     def _run_solution(
