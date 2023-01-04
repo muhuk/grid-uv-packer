@@ -158,6 +158,11 @@ class Solution:
             new_search_cell = discrete.CellCoord.zero()
         return new_search_cell
 
+    def _aspect_ratio(self) -> float:
+        (x, y) = self._utilized_area
+        ratio: float = float(x) / float(y) if x != 0 and y != 0 else 1.0
+        return ratio if ratio <= 1.0 else 1.0 / ratio
+
     def _calculate_grow_chance(self) -> float:
         grow_chance: float = constants.GROW_BASE_CHANCE
         utilized_x: float = float(self._utilized_area[0])
@@ -170,13 +175,8 @@ class Solution:
             grow_chance += constants.GROW_AREA_CHANCE
         del w, h
         # Grow only if utilized area is rectangular.
-        ratio: float = utilized_x / utilized_y \
-            if utilized_x != 0.0 and utilized_y != 0.0 else 1.0
-        if ratio > 1.0:
-            ratio = 1.0 / ratio
-        if ratio <= constants.GROW_ASPECT_RATIO_LIMIT:
+        if self._aspect_ratio() <= constants.GROW_ASPECT_RATIO_LIMIT:
             grow_chance += constants.GROW_ASPECT_RATIO_CHANCE
-        del ratio
         return max(0.0, min(grow_chance, 1.0))
 
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
