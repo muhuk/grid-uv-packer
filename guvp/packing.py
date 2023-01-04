@@ -319,6 +319,10 @@ class GridPacker:
 
     def _categorize_islands(self) -> Tuple[List[continuous.Island],
                                            List[continuous.Island]]:
+        debug.print_("Island count is {}", len(self._islands))
+        # We need at least 2 islands for statistics functions to work.
+        if len(self._islands) <= 10:
+            return (self._islands, [])
         island_sizes: List[int] = sorted([len(i.mask) for i in self._islands])
         median_size: int = statistics.median_low(island_sizes)
         large_islands = [i for i in self._islands if len(i.mask) > median_size]
