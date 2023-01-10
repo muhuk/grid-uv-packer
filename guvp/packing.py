@@ -26,7 +26,6 @@ import itertools
 import math
 import multiprocessing
 import random
-import statistics
 from typing import (List, Generator, Sequence, Tuple, Optional)
 
 import bmesh                  # type: ignore
@@ -52,6 +51,7 @@ class Solution:
         self._rng = random.Random(random_seed)
         self._search_start = discrete.CellCoord.zero()
         self._utilized_area = (0, 0)
+        self._use_available_area: float = 1.0
         self._mask = discrete.Grid.empty(
             width=initial_size,
             height=initial_size
@@ -145,11 +145,12 @@ class Solution:
             search_cell: discrete.CellCoord,
             island_mask_dimensions: Tuple[int, int]
     ) -> discrete.CellCoord:
-        max_width: int = 1
-        if False:
-            max_width = self._utilized_area[1]
-        else:
-            max_width = self._collision_mask.width
+        max_width: int = int(
+            self._use_available_area * self._collision_mask.width
+        ) + int(
+            (1.0 - self._use_available_area) * self._utilized_area[1]
+        )
+        max_width = max(1, min(self._collision_mask.width, max_width))
         # Even though we are using the island mask dimensions
         # and not the location of farthest non-empty cell it
         # produces the correct result because empty cells in
@@ -226,11 +227,29 @@ class Solution:
         return None
 
     def _update_utilized_area(self, ip: IslandPlacement) -> None:
+        # Update self._utilized_area
         (_, _, a, b) = ip.get_bounds()
         self._utilized_area = (
             max(self._utilized_area[0], a),
             max(self._utilized_area[1], b)
         )
+        # Update self._use_available_area
+        assert self._mask.width == self._mask.height
+        max_d: int = self._mask.width / 2
+        dx: int = min(self._mask.width - self._utilized_area[0], max_d)
+        dy: int = min(self._mask.height - self._utilized_area[1], max_d)
+        ratio: float
+        if dx != 0 and dy != 0:
+            ratio = float(dx) / float(dy)
+            if ratio < 1.0:
+                ratio = 1.0 / ratio
+        else:
+            ratio = max_d
+        # 1 - (1/X - 1/NEAR) / (1/FAR - 1/NEAR)
+        # NEAR = 1
+        # FAR = max_d
+        self._use_available_area = \
+            1.0 - ((1.0 / ratio) - 1.0) / ((1.0 / max_d) - 1.0)
 
     def _write_island_to_mask(self, ip: IslandPlacement) -> None:
         self._mask.combine(ip.get_mask(
