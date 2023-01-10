@@ -146,7 +146,7 @@ class Solution:
             island_mask_dimensions: Tuple[int, int]
     ) -> discrete.CellCoord:
         max_width: int = 1
-        if self._aspect_ratio() > constants.ADVANCE_ASPECT_RATIO_MAX:
+        if False:
             max_width = self._utilized_area[1]
         else:
             max_width = self._collision_mask.width
@@ -166,7 +166,8 @@ class Solution:
 
     def _aspect_ratio(self) -> float:
         (x, y) = self._utilized_area
-        return float(x) / float(y) if x != 0 and y != 0 else 1.0
+        ratio: float = float(x) / float(y) if x != 0 and y != 0 else 1.0
+        return ratio if ratio <= 1.0 else 1 / ratio
 
     def _calculate_grow_chance(self) -> float:
         grow_chance: float = constants.GROW_BASE_CHANCE
@@ -181,7 +182,6 @@ class Solution:
         del w, h
         # Grow only if utilized area is rectangular.
         ratio: float = self._aspect_ratio()
-        ratio = ratio if ratio <= 1.0 else 1 / ratio
         if ratio <= constants.GROW_ASPECT_RATIO_LIMIT:
             grow_chance += constants.GROW_ASPECT_RATIO_CHANCE
         del ratio

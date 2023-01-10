@@ -194,10 +194,13 @@ class GridUVPackOperator(bpy.types.Operator):
                     fitness
                 )
                 while iterations_run < self.max_iterations \
-                      and (end_time_ns is None or time.time_ns() < end_time_ns):
+                      and (end_time_ns is None
+                           or time.time_ns() < end_time_ns):
                     (iterations_run, fitness) = packer_coroutine.send(True)
                     wm.progress_update(
-                        int(float(iterations_run) / self.max_iterations * 10000)
+                        int(
+                            float(iterations_run) / self.max_iterations * 10000
+                        )
                     )
                     debug.print_(
                         "Batch: # of iterations {}, fitness {}",

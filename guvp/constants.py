@@ -21,9 +21,6 @@ import enum
 
 ADDON_NAME = __package__
 
-# Utilized area width/height ration should not exceed this.
-ADVANCE_ASPECT_RATIO_MAX = 1.05
-
 DEBUG_MODE_DEFAULT: bool = False
 
 # Grow chance if utilized area is too big.
