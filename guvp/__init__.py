@@ -161,27 +161,42 @@ class GridUVPackOperator(bpy.types.Operator):
             random_seed: int = self.seed if self.seed != 0 \
                 else random.randint(0, constants.SEED_MAX)
             debug.print_("Seed being used is: {}", random_seed)
-            packer = packing.GridPacker(
-                initial_size=grid_size,
-                islands=[
-                    continuous.Island.from_faces(
-                        bm,
-                        face_ids,
-                        cell_size,
-                        self.margin
-                    )
-                    for face_ids in island_face_ids
-                ],
-                rotate=self.rotate,
-                random_seed=random_seed
-            )
 
+            packer: packing.GridPacker
             if self.max_iterations == 1:
                 debug.print_("Running a single iteration.")
+                packer = packing.GridPackerSingle(
+                    initial_size=grid_size,
+                    islands=[
+                        continuous.Island.from_faces(
+                            bm,
+                            face_ids,
+                            cell_size,
+                            self.margin
+                        )
+                        for face_ids in island_face_ids
+                    ],
+                    rotate=self.rotate,
+                    random_seed=random_seed
+                )
                 packer.run_single()
             else:
                 iterations_run: int = 0
                 fitness: float = 0.0
+                packer = packing.GridPackerGenerator(
+                    initial_size=grid_size,
+                    islands=[
+                        continuous.Island.from_faces(
+                            bm,
+                            face_ids,
+                            cell_size,
+                            self.margin
+                        )
+                        for face_ids in island_face_ids
+                    ],
+                    rotate=self.rotate,
+                    random_seed=random_seed
+                )
                 packer_coroutine = packer.run_generator()
                 (iterations_run, fitness) = next(packer_coroutine)
                 wm.progress_update(

@@ -281,53 +281,6 @@ class GridPacker:
         else:
             return self._winner.fitness
 
-    def run_generator(self) -> Generator[Tuple[int, float], bool, None]:
-        # yield type (no_of_iterations_so_far, fitness)
-        # Bookkeeping and decisions are taken on the caller side.
-        #
-        # caller calls next(g) to get the 1st run results.
-        # until good enough results = g.send(True)
-        # if good enough g.send(False) to finish.
-        batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
-        rotations = constants.ALL_ROTATIONS if self._rotate \
-            else (constants.Rotation.NONE,)
-        debug.print_("batch size is {}.", batch_size)
-        iterations_run: int = 0
-        should_continue: bool = True
-
-        grouped_islands = self._group_islands()
-        executor: futures.Executor = futures.ProcessPoolExecutor()
-        # TODO: Handle exceptions raised in workers.
-        # TODO: Add execution timeout.
-        try:
-            while should_continue:
-                results = executor.map(
-                    self._run_solution,
-                    itertools.repeat(self._initial_size),
-                    itertools.repeat(rotations),
-                    [
-                        self._rng.randint(0, constants.SEED_MAX)
-                        for _ in range(batch_size)
-                    ],
-                    *[itertools.repeat(g) for g in grouped_islands]
-                )
-                for (result, solution) in results:
-                    if result and solution.fitness > self.fitness:
-                        self._winner = solution
-                iterations_run += batch_size
-                should_continue = yield (iterations_run, self.fitness)
-        finally:
-            executor.shutdown()
-        yield (iterations_run, self.fitness)
-
-    def run_single(self) -> None:
-        rotations = constants.ALL_ROTATIONS if self._rotate \
-            else (constants.Rotation.NONE,)
-        seed = self._rng.randint(0, constants.SEED_MAX)
-        solution: Solution = Solution(self._initial_size, rotations, seed)
-        if solution.pack_grouped(*self._group_islands()):
-            self._winner = solution
-
     def write(self, bm: bmesh.types.BMesh) -> None:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
@@ -373,6 +326,57 @@ class GridPacker:
     ) -> Tuple[bool, Solution]:
         solution: Solution = Solution(initial_size, rotations, seed)
         return solution.pack_grouped(*grouped_islands), solution
+
+
+class GridPackerSingle(GridPacker):
+    def run_single(self) -> None:
+        rotations = constants.ALL_ROTATIONS if self._rotate \
+            else (constants.Rotation.NONE,)
+        seed = self._rng.randint(0, constants.SEED_MAX)
+        solution: Solution = Solution(self._initial_size, rotations, seed)
+        if solution.pack_grouped(*self._group_islands()):
+            self._winner = solution
+
+
+class GridPackerGenerator(GridPacker):
+    def run_generator(self) -> Generator[Tuple[int, float], bool, None]:
+        # yield type (no_of_iterations_so_far, fitness)
+        # Bookkeeping and decisions are taken on the caller side.
+        #
+        # caller calls next(g) to get the 1st run results.
+        # until good enough results = g.send(True)
+        # if good enough g.send(False) to finish.
+        batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
+        rotations = constants.ALL_ROTATIONS if self._rotate \
+            else (constants.Rotation.NONE,)
+        debug.print_("batch size is {}.", batch_size)
+        iterations_run: int = 0
+        should_continue: bool = True
+
+        grouped_islands = self._group_islands()
+        executor: futures.Executor = futures.ProcessPoolExecutor()
+        # TODO: Handle exceptions raised in workers.
+        # TODO: Add execution timeout.
+        try:
+            while should_continue:
+                results = executor.map(
+                    self._run_solution,
+                    itertools.repeat(self._initial_size),
+                    itertools.repeat(rotations),
+                    [
+                        self._rng.randint(0, constants.SEED_MAX)
+                        for _ in range(batch_size)
+                    ],
+                    *[itertools.repeat(g) for g in grouped_islands]
+                )
+                for (result, solution) in results:
+                    if result and solution.fitness > self.fitness:
+                        self._winner = solution
+                iterations_run += batch_size
+                should_continue = yield (iterations_run, self.fitness)
+        finally:
+            executor.shutdown()
+        yield (iterations_run, self.fitness)
 
 
 @dataclass(frozen=True)
