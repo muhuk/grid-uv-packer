@@ -181,9 +181,7 @@ class GridUVPackOperator(bpy.types.Operator):
                 )
                 packer.run_single()
             else:
-                iterations_run: int = 0
-                fitness: float = 0.0
-                packer = packing.GridPackerGenerator(
+                packer = packing.GridPackerParallel(
                     initial_size=grid_size,
                     islands=[
                         continuous.Island.from_faces(
@@ -197,39 +195,29 @@ class GridUVPackOperator(bpy.types.Operator):
                     rotate=self.rotate,
                     random_seed=random_seed
                 )
-                packer_coroutine = packer.run_generator()
-                (iterations_run, fitness) = next(packer_coroutine)
-                wm.progress_update(
-                    int(float(iterations_run) / self.max_iterations * 10000)
-                )
-
-                debug.print_(
-                    "Batch: # of iterations {}, fitness {}",
-                    iterations_run,
-                    fitness
-                )
-                while iterations_run < self.max_iterations \
+                packer.run()
+                while packer.iterations_completed < self.max_iterations \
                       and (end_time_ns is None
                            or time.time_ns() < end_time_ns):
-                    (iterations_run, fitness) = packer_coroutine.send(True)
-                    wm.progress_update(
-                        int(
-                            float(iterations_run) / self.max_iterations * 10000
-                        )
-                    )
+                    wm.progress_update(int(
+                        float(packer.iterations_completed)
+                        / self.max_iterations * 10000
+                    ))
                     debug.print_(
-                        "Batch: # of iterations {}, fitness {}",
-                        iterations_run,
-                        fitness
+                        "Iterations so far {}, fitness {:.2f}%",
+                        packer.iterations_completed,
+                        packer.fitness * 100.0
                     )
-                packer_coroutine.send(False)
+                    time.sleep(1)
+                debug.print_("Stopping packer.")
+                packer.stop()
 
             debug.print_(
-                "Baseline fitness is {0:0.2f}%",
+                "Baseline fitness is {:.2f}%",
                 baseline_fitness * 100
             )
             debug.print_(
-                "Grid packer fitness is {0:0.2f}%",
+                "Grid packer fitness is {:.2f}%",
                 packer.fitness * 100
             )
             # TODO: Handle failure better.

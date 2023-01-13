@@ -22,11 +22,10 @@ from collections import deque
 from concurrent import futures
 from dataclasses import dataclass
 import enum
-import itertools
 import math
 import multiprocessing
 import random
-from typing import (List, Generator, Sequence, Tuple, Optional)
+from typing import (List, Sequence, Tuple, Optional)
 
 import bmesh                  # type: ignore
 
@@ -273,6 +272,9 @@ class GridPacker:
         self._rotate: bool = rotate
         self._rng = random.Random(random_seed)
         self._winner: Optional[Solution] = None
+        self._rotations: Sequence[constants.Rotation] = \
+            constants.ALL_ROTATIONS if self._rotate \
+            else (constants.Rotation.NONE,)
 
     @property
     def fitness(self) -> float:
@@ -317,6 +319,85 @@ class GridPacker:
         assert sum(map(len, result)) == len(self._islands)
         return result
 
+
+class GridPackerSingle(GridPacker):
+    def run_single(self) -> None:
+        seed = self._rng.randint(0, constants.SEED_MAX)
+        solution: Solution = Solution(
+            self._initial_size,
+            self._rotations,
+            seed
+        )
+        if solution.pack_grouped(*self._group_islands()):
+            self._winner = solution
+
+
+class GridPackerParallel(GridPacker):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._executor: Optional[futures.Executor] = None
+        self._grouped_islands: List[List[continuous.Island]] = []
+        self._tasks: List[futures.Future[Tuple[bool, Solution]]] = []
+        self._max_parallel_tasks: int = max(2, multiprocessing.cpu_count() - 1)
+        self.iterations_completed: int = 0
+
+    def __del__(self):
+        if self._executor is not None:
+            self.stop()
+
+    def run(self) -> None:
+        # Set up executor.
+        self._executor = futures.ProcessPoolExecutor()
+        self._grouped_islands = self._group_islands()
+        # Continuously queue new jobs.
+        self._create_tasks()
+        # Continuously dequeue finished jobs and update winner.
+        pass
+
+    def stop(self) -> None:
+        assert self._executor is not None
+        executor = self._executor
+        self._executor = None
+        executor.shutdown(wait=False, cancel_futures=True)
+        self._tasks = []
+
+    def _create_tasks(self) -> None:
+        assert self._executor is not None
+        for _ in range(self._max_parallel_tasks - len(self._tasks)):
+            task = self._executor.submit(
+                self._run_solution,
+                self._initial_size,
+                self._rotations,
+                self._rng.randint(0, constants.SEED_MAX),
+                *self._grouped_islands
+            )
+            task.add_done_callback(self._process_result)
+            self._tasks.append(task)
+
+    def _process_result(
+            self, task:
+            futures.Future[Tuple[bool, Solution]]
+    ) -> None:
+        if task.cancelled():
+            return None
+        exception = task.exception()
+        if exception is not None:
+            raise exception
+        del exception
+
+        self.iterations_completed += 1
+        (result, solution) = task.result()
+        if result and solution.fitness > self.fitness:
+            self._winner = solution
+        if self._executor is not None:
+            self._tasks.remove(task)
+            self._create_tasks()
+        debug.print_(
+            "Task completed. # of tasks is {}/{}",
+            len(self._tasks),
+            self._max_parallel_tasks
+        )
+
     @staticmethod
     def _run_solution(
             initial_size: int,
@@ -326,57 +407,6 @@ class GridPacker:
     ) -> Tuple[bool, Solution]:
         solution: Solution = Solution(initial_size, rotations, seed)
         return solution.pack_grouped(*grouped_islands), solution
-
-
-class GridPackerSingle(GridPacker):
-    def run_single(self) -> None:
-        rotations = constants.ALL_ROTATIONS if self._rotate \
-            else (constants.Rotation.NONE,)
-        seed = self._rng.randint(0, constants.SEED_MAX)
-        solution: Solution = Solution(self._initial_size, rotations, seed)
-        if solution.pack_grouped(*self._group_islands()):
-            self._winner = solution
-
-
-class GridPackerGenerator(GridPacker):
-    def run_generator(self) -> Generator[Tuple[int, float], bool, None]:
-        # yield type (no_of_iterations_so_far, fitness)
-        # Bookkeeping and decisions are taken on the caller side.
-        #
-        # caller calls next(g) to get the 1st run results.
-        # until good enough results = g.send(True)
-        # if good enough g.send(False) to finish.
-        batch_size: int = int(max(2.0, multiprocessing.cpu_count() * 1.25))
-        rotations = constants.ALL_ROTATIONS if self._rotate \
-            else (constants.Rotation.NONE,)
-        debug.print_("batch size is {}.", batch_size)
-        iterations_run: int = 0
-        should_continue: bool = True
-
-        grouped_islands = self._group_islands()
-        executor: futures.Executor = futures.ProcessPoolExecutor()
-        # TODO: Handle exceptions raised in workers.
-        # TODO: Add execution timeout.
-        try:
-            while should_continue:
-                results = executor.map(
-                    self._run_solution,
-                    itertools.repeat(self._initial_size),
-                    itertools.repeat(rotations),
-                    [
-                        self._rng.randint(0, constants.SEED_MAX)
-                        for _ in range(batch_size)
-                    ],
-                    *[itertools.repeat(g) for g in grouped_islands]
-                )
-                for (result, solution) in results:
-                    if result and solution.fitness > self.fitness:
-                        self._winner = solution
-                iterations_run += batch_size
-                should_continue = yield (iterations_run, self.fitness)
-        finally:
-            executor.shutdown()
-        yield (iterations_run, self.fitness)
 
 
 @dataclass(frozen=True)
