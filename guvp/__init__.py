@@ -81,12 +81,14 @@ class GridUVPackOperator(bpy.types.Operator):
             ("128", "128", "", 'NONE', 128),  # noqa: F722,F821
             ("256", "256", "", 'NONE', 256),  # noqa: F722,F821
             ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
-        )
+        ),
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
     rotate: bpy.props.BoolProperty(           # type: ignore
         name="Rotate",                        # noqa: F821
         description="Rotate islands for best fit.",
-        default=True
+        default=True,
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
     margin: bpy.props.FloatProperty(          # type: ignore
         name="Margin",                        # noqa: F821
@@ -94,14 +96,16 @@ class GridUVPackOperator(bpy.types.Operator):
         default=0.01,
         min=0.0,
         max=1.0,
-        precision=3
+        precision=3,
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
     max_iterations: bpy.props.IntProperty(    # type: ignore
         name="Max Iterations",
         description="Maximum number of iterations.",
         default=constants.MAX_ITERATIONS_DEFAULT,
         min=1,
-        max=constants.MAX_ITERATIONS_LIMIT
+        max=constants.MAX_ITERATIONS_LIMIT,
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
     max_runtime: bpy.props.IntProperty(       # type: ignore
         name="Max Runtime",
@@ -109,14 +113,28 @@ class GridUVPackOperator(bpy.types.Operator):
         default=constants.MAX_RUNTIME_DEFAULT,
         min=0,
         max=constants.MAX_RUNTIME_LIMIT,
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
     seed: bpy.props.IntProperty(              # type: ignore
         name="Random Seed",
         description="Seed of the random generator.",
         default=0,
         min=0,
-        max=constants.SEED_MAX
+        max=constants.SEED_MAX,
+        options={'SKIP_SAVE'}                 # noqa: F821
     )
+
+    def __init__(self):
+        # Size of one grid cell (square) in UV coordinate system.
+        self.cell_size: float
+        # This is the actual seed used in calculations.
+        # If 'seed' is set to 0, 'random_seed' takes a random value.
+        self.random_seed: int
+        self.start_time_ns: int
+        self.bm: bmesh.types.BMesh
+        self.island_face_ids: List[set[int]]
+        self.baseline_fitness: float
+        self.packer: packing.GridPacker
 
     @classmethod
     def poll(cls, context):
@@ -125,210 +143,137 @@ class GridUVPackOperator(bpy.types.Operator):
             context.mode == 'EDIT_MESH'
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        if self.max_iterations == 1:
-            return self.execute_single(context)
-        else:
-            return self.execute_parallel(context)
-
-    def execute_single(self, context: bpy.types.Context) -> Set[str]:
         assert context.mode == 'EDIT_MESH'
         assert 0.0 <= self.margin <= 1.0
-        # We ignore the type of self.grid_size for bpy reasons.
-        # So let's cast it explicitly here.
-        grid_size: int = int(self.grid_size)
-        # Size of one grid cell (square) in UV coordinate system.
-        cell_size: float = 1.0 / grid_size
 
-        start_time_ns: int = time.time_ns()
+        self.cell_size = 1.0 / int(self.grid_size)
+        self.random_seed = self.seed if self.seed != 0 \
+            else random.randint(0, constants.SEED_MAX)
+        self.start_time_ns = time.time_ns()
 
-        wm: bpy.types.WindowManager = context.window_manager
-        wm.progress_begin(0, 10000)
+        self.bm = bmesh.new()
+        self.bm.from_mesh(context.active_object.data)
+        self.bm.verts.ensure_lookup_table()
+        self.bm.edges.ensure_lookup_table()
+        self.bm.faces.ensure_lookup_table()
 
-        mesh = context.active_object.data
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bm.verts.ensure_lookup_table()
-        bm.edges.ensure_lookup_table()
-        bm.faces.ensure_lookup_table()
-
-        wm.progress_update(1)
+        self.island_face_ids = self._island_face_ids(self.bm)
 
         # Calculate fitness of the input UVs.
-        island_face_ids: List[set[int]] = self._island_face_ids(bm)
-        baseline_fitness: Optional[float]
-        baseline_fitness = self._calculate_baseline_fitness(
-            bm,
-            grid_size,
-            reduce(lambda a, b: set(a) | b, island_face_ids, set())
+        baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
+            self.bm,
+            int(self.grid_size),
+            reduce(lambda a, b: set(a) | b, self.island_face_ids, set())
         )
         if baseline_fitness is None:
             self.report(
                 {'ERROR'}, "Island out of bounds in active UV map."
             )
             return {'CANCELLED'}
-        # Use a random seed if seed prop is set to zero.
-        random_seed: int = self.seed if self.seed != 0 \
-            else random.randint(0, constants.SEED_MAX)
-        debug.print_("Seed being used is: {}", random_seed)
+        else:
+            self.baseline_fitness = baseline_fitness
+            debug.print_("Seed being used is: {}", self.random_seed)
+            if self.max_iterations == 1:
+                return self.execute_single(context)
+            else:
+                return self.execute_parallel(context)
 
-        packer: packing.GridPacker
+    def execute_single(self, context: bpy.types.Context) -> Set[str]:
         debug.print_("Running a single iteration.")
-        packer = packing.GridPackerSingle(
-            initial_size=grid_size,
+
+        self.packer = packing.GridPackerSingle(
+            initial_size=int(self.grid_size),
             islands=[
                 continuous.Island.from_faces(
-                    bm,
+                    self.bm,
                     face_ids,
-                    cell_size,
+                    self.cell_size,
                     self.margin
                 )
-                for face_ids in island_face_ids
+                for face_ids in self.island_face_ids
             ],
             rotate=self.rotate,
-            random_seed=random_seed
+            random_seed=self.random_seed
         )
-        packer.run_single()
+        self.packer.run_single()
 
-        debug.print_(
-            "Baseline fitness is {:.2f}%",
-            baseline_fitness * 100
-        )
-        debug.print_(
-            "Grid packer fitness is {:.2f}%",
-            packer.fitness * 100
-        )
-        # TODO: Handle failure better.
-        #       Ideally fitness should be better than the current
-        #       UV configuration.
-        if packer.fitness > 0.20:
-            packer.write(bm)
-            # Get out of EDIT mode.
-            bpy.ops.object.editmode_toggle()
-            bm.to_mesh(mesh)
-            # Back into EDIT mode.
-            bpy.ops.object.editmode_toggle()
-
-        bm.free()
-        del bm, mesh
-
-        wm.progress_end()
-        del wm
-
-        debug.print_(
-            "Total time: {:.3f}",
-            (time.time_ns() - start_time_ns) / 1_000_000_000
-        )
-        return {'FINISHED'}
+        return self.finish(context)
 
     def execute_parallel(self, context: bpy.types.Context) -> Set[str]:
-        assert context.mode == 'EDIT_MESH'
-        assert 0.0 <= self.margin <= 1.0
-        # We ignore the type of self.grid_size for bpy reasons.
-        # So let's cast it explicitly here.
-        grid_size: int = int(self.grid_size)
-        # Size of one grid cell (square) in UV coordinate system.
-        cell_size: float = 1.0 / grid_size
-
-        start_time_ns: int = time.time_ns()
         end_time_ns: Optional[int] = None
         if self.max_runtime > 0:
-            end_time_ns = start_time_ns + \
+            end_time_ns = self.start_time_ns + \
                 self.max_runtime * 1_000_000_000
 
         wm: bpy.types.WindowManager = context.window_manager
         wm.progress_begin(0, 10000)
-
-        mesh = context.active_object.data
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bm.verts.ensure_lookup_table()
-        bm.edges.ensure_lookup_table()
-        bm.faces.ensure_lookup_table()
-
         wm.progress_update(1)
 
-        # Calculate fitness of the input UVs.
-        island_face_ids: List[set[int]] = self._island_face_ids(bm)
-        baseline_fitness: Optional[float]
-        baseline_fitness = self._calculate_baseline_fitness(
-            bm,
-            grid_size,
-            reduce(lambda a, b: set(a) | b, island_face_ids, set())
-        )
-        if baseline_fitness is None:
-            self.report(
-                {'ERROR'}, "Island out of bounds in active UV map."
-            )
-            return {'CANCELLED'}
-        # Use a random seed if seed prop is set to zero.
-        random_seed: int = self.seed if self.seed != 0 \
-            else random.randint(0, constants.SEED_MAX)
-        debug.print_("Seed being used is: {}", random_seed)
-
-        packer: packing.GridPacker
-        packer = packing.GridPackerParallel(
-            initial_size=grid_size,
+        self.packer = packing.GridPackerParallel(
+            initial_size=int(self.grid_size),
             islands=[
                 continuous.Island.from_faces(
-                    bm,
+                    self.bm,
                     face_ids,
-                    cell_size,
+                    self.cell_size,
                     self.margin
                 )
-                for face_ids in island_face_ids
+                for face_ids in self.island_face_ids
             ],
             rotate=self.rotate,
-            random_seed=random_seed
+            random_seed=self.random_seed
         )
-        packer.run()
-        while packer.iterations_completed < self.max_iterations \
+        self.packer.run()
+        while self.packer.iterations_completed < self.max_iterations \
               and (end_time_ns is None
                    or time.time_ns() < end_time_ns):
             wm.progress_update(int(
-                float(packer.iterations_completed)
+                float(self.packer.iterations_completed)
                 / self.max_iterations * 10000
             ))
             debug.print_(
                 "Iterations so far {}, fitness {:.2f}%",
-                packer.iterations_completed,
-                packer.fitness * 100.0
+                self.packer.iterations_completed,
+                self.packer.fitness * 100.0
             )
             time.sleep(1)
         debug.print_("Stopping packer.")
-        packer.stop()
-
-        debug.print_(
-            "Baseline fitness is {:.2f}%",
-            baseline_fitness * 100
-        )
-        debug.print_(
-            "Grid packer fitness is {:.2f}%",
-            packer.fitness * 100
-        )
-        # TODO: Handle failure better.
-        #       Ideally fitness should be better than the current
-        #       UV configuration.
-        if packer.fitness > 0.20:
-            packer.write(bm)
-            # Get out of EDIT mode.
-            bpy.ops.object.editmode_toggle()
-            bm.to_mesh(mesh)
-            # Back into EDIT mode.
-            bpy.ops.object.editmode_toggle()
-
-        bm.free()
-        del bm, mesh
+        self.packer.stop()
 
         wm.progress_end()
         del wm
 
+        return self.finish(context)
+
+    def finish(self, context) -> Set[str]:
+        debug.print_(
+            "Baseline fitness is {:.2f}%",
+            self.baseline_fitness * 100
+        )
+        debug.print_(
+            "Grid packer fitness is {:.2f}%",
+            self.packer.fitness * 100
+        )
+        # TODO: Handle failure better.
+        #       Ideally fitness should be better than the current
+        #       UV configuration.
+        if self.packer.fitness > 0.20:
+            self.packer.write(self.bm)
+            # Get out of EDIT mode.
+            bpy.ops.object.editmode_toggle()
+            self.bm.to_mesh(context.active_object.data)
+            # Back into EDIT mode.
+            bpy.ops.object.editmode_toggle()
+
+        self.bm.free()
+
         debug.print_(
             "Total time: {:.3f}",
-            (time.time_ns() - start_time_ns) / 1_000_000_000
+            (time.time_ns() - self.start_time_ns) / 1_000_000_000
         )
         return {'FINISHED'}
 
-    def invoke(self, context, event):
+    def invoke(self, context, event) -> Set[str]:
         wm: bpy.types.WindowManager = context.window_manager
         return wm.invoke_props_dialog(self)
 
