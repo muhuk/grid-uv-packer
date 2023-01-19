@@ -140,8 +140,10 @@ class GridUVPackOperator(bpy.types.Operator):
             end_time_ns = start_time_ns + \
                 self.max_runtime * 1_000_000_000
 
-        with self._wm_context(context) as wm, \
-             self._mesh_context(context) as (mesh, bm):
+        wm: bpy.types.WindowManager = context.window_manager
+        wm.progress_begin(0, 10000)
+
+        with self._mesh_context(context) as (mesh, bm):
             wm.progress_update(1)
 
             # Calculate fitness of the input UVs.
@@ -230,6 +232,10 @@ class GridUVPackOperator(bpy.types.Operator):
                 bm.to_mesh(mesh)
                 # Back into EDIT mode.
                 bpy.ops.object.editmode_toggle()
+
+        wm.progress_end()
+        del wm
+
         debug.print_(
             "Total time: {:.3f}",
             (time.time_ns() - start_time_ns) / 1_000_000_000
@@ -253,16 +259,6 @@ class GridUVPackOperator(bpy.types.Operator):
             yield (mesh, bm)
         finally:
             bm.free()
-
-    @staticmethod
-    @contextmanager
-    def _wm_context(context: bpy.types.Context):
-        wm: bpy.types.WindowManager = context.window_manager
-        wm.progress_begin(0, 10000)
-        try:
-            yield wm
-        finally:
-            wm.progress_end()
 
     @staticmethod
     def _calculate_baseline_fitness(
