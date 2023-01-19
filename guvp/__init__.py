@@ -125,6 +125,102 @@ class GridUVPackOperator(bpy.types.Operator):
             context.mode == 'EDIT_MESH'
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
+        if self.max_iterations == 1:
+            return self.execute_single(context)
+        else:
+            return self.execute_parallel(context)
+
+    def execute_single(self, context: bpy.types.Context) -> Set[str]:
+        assert context.mode == 'EDIT_MESH'
+        assert 0.0 <= self.margin <= 1.0
+        # We ignore the type of self.grid_size for bpy reasons.
+        # So let's cast it explicitly here.
+        grid_size: int = int(self.grid_size)
+        # Size of one grid cell (square) in UV coordinate system.
+        cell_size: float = 1.0 / grid_size
+
+        start_time_ns: int = time.time_ns()
+
+        wm: bpy.types.WindowManager = context.window_manager
+        wm.progress_begin(0, 10000)
+
+        mesh = context.active_object.data
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
+        bm.faces.ensure_lookup_table()
+
+        wm.progress_update(1)
+
+        # Calculate fitness of the input UVs.
+        island_face_ids: List[set[int]] = self._island_face_ids(bm)
+        baseline_fitness: Optional[float]
+        baseline_fitness = self._calculate_baseline_fitness(
+            bm,
+            grid_size,
+            reduce(lambda a, b: set(a) | b, island_face_ids, set())
+        )
+        if baseline_fitness is None:
+            self.report(
+                {'ERROR'}, "Island out of bounds in active UV map."
+            )
+            return {'CANCELLED'}
+        # Use a random seed if seed prop is set to zero.
+        random_seed: int = self.seed if self.seed != 0 \
+            else random.randint(0, constants.SEED_MAX)
+        debug.print_("Seed being used is: {}", random_seed)
+
+        packer: packing.GridPacker
+        debug.print_("Running a single iteration.")
+        packer = packing.GridPackerSingle(
+            initial_size=grid_size,
+            islands=[
+                continuous.Island.from_faces(
+                    bm,
+                    face_ids,
+                    cell_size,
+                    self.margin
+                )
+                for face_ids in island_face_ids
+            ],
+            rotate=self.rotate,
+            random_seed=random_seed
+        )
+        packer.run_single()
+
+        debug.print_(
+            "Baseline fitness is {:.2f}%",
+            baseline_fitness * 100
+        )
+        debug.print_(
+            "Grid packer fitness is {:.2f}%",
+            packer.fitness * 100
+        )
+        # TODO: Handle failure better.
+        #       Ideally fitness should be better than the current
+        #       UV configuration.
+        if packer.fitness > 0.20:
+            packer.write(bm)
+            # Get out of EDIT mode.
+            bpy.ops.object.editmode_toggle()
+            bm.to_mesh(mesh)
+            # Back into EDIT mode.
+            bpy.ops.object.editmode_toggle()
+
+        bm.free()
+        del bm, mesh
+
+        wm.progress_end()
+        del wm
+
+        debug.print_(
+            "Total time: {:.3f}",
+            (time.time_ns() - start_time_ns) / 1_000_000_000
+        )
+        return {'FINISHED'}
+
+    def execute_parallel(self, context: bpy.types.Context) -> Set[str]:
         assert context.mode == 'EDIT_MESH'
         assert 0.0 <= self.margin <= 1.0
         # We ignore the type of self.grid_size for bpy reasons.
@@ -170,54 +266,36 @@ class GridUVPackOperator(bpy.types.Operator):
         debug.print_("Seed being used is: {}", random_seed)
 
         packer: packing.GridPacker
-        if self.max_iterations == 1:
-            debug.print_("Running a single iteration.")
-            packer = packing.GridPackerSingle(
-                initial_size=grid_size,
-                islands=[
-                    continuous.Island.from_faces(
-                        bm,
-                        face_ids,
-                        cell_size,
-                        self.margin
-                    )
-                    for face_ids in island_face_ids
-                ],
-                rotate=self.rotate,
-                random_seed=random_seed
-            )
-            packer.run_single()
-        else:
-            packer = packing.GridPackerParallel(
-                initial_size=grid_size,
-                islands=[
-                    continuous.Island.from_faces(
-                        bm,
-                        face_ids,
-                        cell_size,
-                        self.margin
-                    )
-                    for face_ids in island_face_ids
-                ],
-                rotate=self.rotate,
-                random_seed=random_seed
-            )
-            packer.run()
-            while packer.iterations_completed < self.max_iterations \
-                  and (end_time_ns is None
-                       or time.time_ns() < end_time_ns):
-                wm.progress_update(int(
-                    float(packer.iterations_completed)
-                    / self.max_iterations * 10000
-                ))
-                debug.print_(
-                    "Iterations so far {}, fitness {:.2f}%",
-                    packer.iterations_completed,
-                    packer.fitness * 100.0
+        packer = packing.GridPackerParallel(
+            initial_size=grid_size,
+            islands=[
+                continuous.Island.from_faces(
+                    bm,
+                    face_ids,
+                    cell_size,
+                    self.margin
                 )
-                time.sleep(1)
-            debug.print_("Stopping packer.")
-            packer.stop()
+                for face_ids in island_face_ids
+            ],
+            rotate=self.rotate,
+            random_seed=random_seed
+        )
+        packer.run()
+        while packer.iterations_completed < self.max_iterations \
+              and (end_time_ns is None
+                   or time.time_ns() < end_time_ns):
+            wm.progress_update(int(
+                float(packer.iterations_completed)
+                / self.max_iterations * 10000
+            ))
+            debug.print_(
+                "Iterations so far {}, fitness {:.2f}%",
+                packer.iterations_completed,
+                packer.fitness * 100.0
+            )
+            time.sleep(1)
+        debug.print_("Stopping packer.")
+        packer.stop()
 
         debug.print_(
             "Baseline fitness is {:.2f}%",
