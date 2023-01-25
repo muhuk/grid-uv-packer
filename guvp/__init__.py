@@ -238,6 +238,7 @@ class GridUVPackOperator(bpy.types.Operator):
               event: bpy.types.Event) -> Set[str]:
         assert type(self.packer) is packing.GridPackerParallel
         wm: bpy.types.WindowManager = context.window_manager
+        should_continue = True
         if event.type == 'TIMER':
             if self.packer.iterations_completed < self.max_iterations \
                and (self.end_time_ns is None
@@ -252,18 +253,18 @@ class GridUVPackOperator(bpy.types.Operator):
                     self.packer.fitness * 100.0
                 )
             else:
-                debug.print_("Stopping packer.")
-                self.packer.stop()
-                wm.progress_end()
-                wm.event_timer_remove(self._timer)
-                return self.finish(context)
+                should_continue = False
         elif event.type == 'ESC':
+            should_continue = False
+
+        if should_continue:
+            return {'RUNNING_MODAL'}
+        else:
             debug.print_("Stopping packer.")
             self.packer.stop()
             wm.progress_end()
             wm.event_timer_remove(self._timer)
             return self.finish(context)
-        return {'RUNNING_MODAL'}
 
     def finish(self, context: bpy.types.Context) -> Set[str]:
         debug.print_(
