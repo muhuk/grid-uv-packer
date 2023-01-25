@@ -285,6 +285,9 @@ class GridUVPackOperator(bpy.types.Operator):
             self.bm.to_mesh(context.active_object.data)
             # Back into EDIT mode.
             bpy.ops.object.editmode_toggle()
+            self.report({'INFO'}, "UVs updated.")
+        else:
+            self.report({'INFO'}, "UVs are not changed.")
 
         self.bm.free()
 
