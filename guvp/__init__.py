@@ -131,10 +131,12 @@ class GridUVPackOperator(bpy.types.Operator):
         # If 'seed' is set to 0, 'random_seed' takes a random value.
         self.random_seed: int
         self.start_time_ns: int
+        self.end_time_ns: Optional[int]
         self.bm: bmesh.types.BMesh
         self.island_face_ids: List[set[int]]
         self.baseline_fitness: float
         self.packer: packing.GridPacker
+        self._timer: bpy.types.Timer
 
     @classmethod
     def poll(cls, context):
@@ -200,9 +202,8 @@ class GridUVPackOperator(bpy.types.Operator):
         return self.finish(context)
 
     def execute_parallel(self, context: bpy.types.Context) -> Set[str]:
-        end_time_ns: Optional[int] = None
         if self.max_runtime > 0:
-            end_time_ns = self.start_time_ns + \
+            self.end_time_ns = self.start_time_ns + \
                 self.max_runtime * 1_000_000_000
 
         wm: bpy.types.WindowManager = context.window_manager
@@ -224,28 +225,47 @@ class GridUVPackOperator(bpy.types.Operator):
             random_seed=self.random_seed
         )
         self.packer.run()
-        while self.packer.iterations_completed < self.max_iterations \
-              and (end_time_ns is None
-                   or time.time_ns() < end_time_ns):
-            wm.progress_update(int(
-                float(self.packer.iterations_completed)
-                / self.max_iterations * 10000
-            ))
-            debug.print_(
-                "Iterations so far {}, fitness {:.2f}%",
-                self.packer.iterations_completed,
-                self.packer.fitness * 100.0
-            )
-            time.sleep(1)
-        debug.print_("Stopping packer.")
-        self.packer.stop()
 
-        wm.progress_end()
-        del wm
+        self._timer = wm.event_timer_add(
+            constants.OPERATOR_TIMER_TIME_STEP,
+            window=context.window
+        )
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
 
-        return self.finish(context)
+    def modal(self,
+              context: bpy.types.Context,
+              event: bpy.types.Event) -> Set[str]:
+        assert type(self.packer) is packing.GridPackerParallel
+        wm: bpy.types.WindowManager = context.window_manager
+        if event.type == 'TIMER':
+            if self.packer.iterations_completed < self.max_iterations \
+               and (self.end_time_ns is None
+                    or time.time_ns() < self.end_time_ns):
+                wm.progress_update(int(
+                    float(self.packer.iterations_completed)
+                    / self.max_iterations * 10000
+                ))
+                debug.print_(
+                    "Iterations so far {}, fitness {:.2f}%",
+                    self.packer.iterations_completed,
+                    self.packer.fitness * 100.0
+                )
+            else:
+                debug.print_("Stopping packer.")
+                self.packer.stop()
+                wm.progress_end()
+                wm.event_timer_remove(self._timer)
+                return self.finish(context)
+        elif event.type == 'ESC':
+            debug.print_("Stopping packer.")
+            self.packer.stop()
+            wm.progress_end()
+            wm.event_timer_remove(self._timer)
+            return self.finish(context)
+        return {'RUNNING_MODAL'}
 
-    def finish(self, context) -> Set[str]:
+    def finish(self, context: bpy.types.Context) -> Set[str]:
         debug.print_(
             "Baseline fitness is {:.2f}%",
             self.baseline_fitness * 100
