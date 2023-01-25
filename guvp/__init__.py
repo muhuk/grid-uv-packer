@@ -275,10 +275,7 @@ class GridUVPackOperator(bpy.types.Operator):
             "Grid packer fitness is {:.2f}%",
             self.packer.fitness * 100
         )
-        # TODO: Handle failure better.
-        #       Ideally fitness should be better than the current
-        #       UV configuration.
-        if self.packer.fitness > 0.20:
+        if self.packer.fitness > self.baseline_fitness:
             self.packer.write(self.bm)
             # Get out of EDIT mode.
             bpy.ops.object.editmode_toggle()
