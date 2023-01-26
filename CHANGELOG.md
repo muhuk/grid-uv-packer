@@ -1,5 +1,32 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- You can interrupt calculation via `ESC` key.  Note that this does not cancel
+  the operation.  If a solution with better coverage is already found, UVs
+  will be updated.  (You can undo the operator)
+
+### Changed
+
+- When `Max Iterations` is set to `1` packer is run single threaded.  Note
+  that you need a lot more than one iteration to get decent results, this is
+  intended for
+  debugging. [8f36daf](https://github.com/muhuk/grid-uv-packer/commit/06f16e6ce46babb7420e6b2053cf9bc038f36daf)
+- Previously any result with 20% coverage or better was considered successful
+  and written to UVs.  Now only the results with better coverage than input
+  UVs are written. [fc949cb](https://github.com/muhuk/grid-uv-packer/commit/df5e0f9bc89937fb120cd71926dedbea7fc949cb)
+
+### Fixed
+
+- Earlier packing tended to produce results that cover a rectangular area
+  (mostly x axis, y axis underutilized) instead of the whole UV square.  This
+  is fixed with
+  [e107900](https://github.com/muhuk/grid-uv-packer/commit/e85f809bc52e5fc591e191cc990ccaf6ee107900)
+  and
+  [3863a48](https://github.com/muhuk/grid-uv-packer/commit/4ce97666e49fcaabe248a31e00beb54073863a48).
+
 ## [0.3] - 2022-12-29
 
 ### Added
@@ -38,6 +65,7 @@
 ### Added
 - Initial proof of concept release.  Not ready for production use.
 
-[0.2]: https://github.com/muhuk/grid-uv-packer/compare/v0.2...v0.3
+[unreleased]: https://github.com/muhuk/grid-uv-packer/compare/v0.3...HEAD
+[0.3]: https://github.com/muhuk/grid-uv-packer/compare/v0.2...v0.3
 [0.2]: https://github.com/muhuk/grid-uv-packer/compare/v0.1...v0.2
 [0.1]: https://github.com/muhuk/grid-uv-packer/releases/tag/v0.1
