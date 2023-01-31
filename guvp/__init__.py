@@ -153,8 +153,7 @@ class GridUVPackOperator(bpy.types.Operator):
             else random.randint(0, constants.SEED_MAX)
         self.start_time_ns = time.time_ns()
 
-        self.bm = bmesh.new()
-        self.bm.from_mesh(context.active_object.data)
+        self.bm = bmesh.from_edit_mesh(context.active_object.data)
         self.bm.verts.ensure_lookup_table()
         self.bm.edges.ensure_lookup_table()
         self.bm.faces.ensure_lookup_table()
@@ -277,16 +276,14 @@ class GridUVPackOperator(bpy.types.Operator):
         )
         if self.packer.fitness > self.baseline_fitness:
             self.packer.write(self.bm)
-            # Get out of EDIT mode.
-            bpy.ops.object.editmode_toggle()
-            self.bm.to_mesh(context.active_object.data)
-            # Back into EDIT mode.
-            bpy.ops.object.editmode_toggle()
+            bmesh.update_edit_mesh(
+                mesh=context.active_object.data,
+                loop_triangles=False,
+                destructive=False
+            )
             self.report({'INFO'}, "UVs updated.")
         else:
             self.report({'INFO'}, "UVs are not changed.")
-
-        self.bm.free()
 
         debug.print_(
             "Total time: {:.3f}",
