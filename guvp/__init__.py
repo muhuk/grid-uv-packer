@@ -328,9 +328,12 @@ class GridUVPackOperator(bpy.types.Operator):
         for faces in island_faces:
             island_selected = True
             for face in faces:
-                for loop_idx, loop in enumerate(face.loops):
-                    if bm.faces[face.index].loops[loop_idx][uv_ident].select is False:
+                for loop in face.loops:
+                    if loop[uv_ident].select is False:
                         island_selected = False
+                        break  # if one face-corner is unselected
+                if island_selected is False:
+                    break  # if one of the faces in island is unselected
             if island_selected:
                 result.append(set([f.index for f in faces]))
         return result
