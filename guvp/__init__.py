@@ -339,13 +339,11 @@ def register():
     bpy.utils.register_class(GridUVPackOperator)
 
     # Register UI
-    bpy.types.VIEW3D_MT_uv_map.append(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.append(menu_draw)
 
 
 def unregister():
     # Unregister UI
-    bpy.types.VIEW3D_MT_uv_map.remove(menu_draw)
     bpy.types.IMAGE_MT_uvs_unwrap.remove(menu_draw)
 
     # Unregister operations
