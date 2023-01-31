@@ -142,9 +142,13 @@ class GridUVPackOperator(bpy.types.Operator):
     def poll(cls, context):
         return context.active_object is not None and \
             context.active_object.type == 'MESH' and \
+            context.active_object.data.uv_layers.active is not None and \
             context.mode == 'EDIT_MESH'
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
+        assert context.active_object is not None
+        assert context.active_object.type == 'MESH'
+        assert context.active_object.data.uv_layers.active is not None
         assert context.mode == 'EDIT_MESH'
         assert 0.0 <= self.margin <= 1.0
 
@@ -317,9 +321,19 @@ class GridUVPackOperator(bpy.types.Operator):
     @staticmethod
     def _island_face_ids(bm: bpy.types.BMesh) -> List[set[int]]:
         """Calculate sets of faces that form a UV island."""
-        uv_ident = bm.loops.layers.uv.verify()
+        uv_ident = bm.loops.layers.uv.active
         island_faces = bmesh_linked_uv_islands(bm, uv_ident)
-        return [set([f.index for f in faces]) for faces in island_faces]
+        result = []
+        island_selected: bool
+        for faces in island_faces:
+            island_selected = True
+            for face in faces:
+                for loop_idx, loop in enumerate(face.loops):
+                    if bm.faces[face.index].loops[loop_idx][uv_ident].select is False:
+                        island_selected = False
+            if island_selected:
+                result.append(set([f.index for f in faces]))
+        return result
 
 
 def menu_draw(self, _context):
