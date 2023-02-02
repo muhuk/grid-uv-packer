@@ -103,7 +103,7 @@ class Island:
                 "Unrecognized rotation {!r}".format(self.rotation)
             )
         del w, h
-        uv_ident = bm.loops.layers.uv.verify()
+        uv_ident = bm.loops.layers.uv.active
         offset_vec: Vector = Vector(offset) * self.cell_size
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
@@ -126,7 +126,7 @@ class Island:
     ) -> tuple[IslandUVs, Vector, Vector]:
         margin_vec: Vector = Vector((margin, margin))
         uvs: IslandUVs = {}
-        uv_ident = bm.loops.layers.uv.verify()
+        uv_ident = bm.loops.layers.uv.active
         (u_min, v_min) = (math.inf, math.inf)
         (u_max, v_max) = (-math.inf, -math.inf)
         for face_id in face_ids:
@@ -213,7 +213,7 @@ def fill_mask(
         cell_size: float,
         mask: discrete.Grid
 ) -> bool:
-    uv_ident = bm.loops.layers.uv.verify()
+    uv_ident = bm.loops.layers.uv.active
 
     for face_id in face_ids:
         loop_uvs: List[Vector] = [
