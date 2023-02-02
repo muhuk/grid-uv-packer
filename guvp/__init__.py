@@ -190,6 +190,7 @@ class GridUVPackOperator(bpy.types.Operator):
         baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
             self.bm,
             int(self.grid_size),
+            self.udim_offset,
             flattened_face_ids
         )
         if baseline_fitness is None:
@@ -301,7 +302,7 @@ class GridUVPackOperator(bpy.types.Operator):
             self.packer.fitness * 100
         )
         if self.packer.fitness > self.baseline_fitness:
-            self.packer.write(self.bm)
+            self.packer.write(self.bm, self.udim_offset)
             bmesh.update_edit_mesh(
                 mesh=context.active_object.data,
                 loop_triangles=False,
@@ -339,10 +340,10 @@ class GridUVPackOperator(bpy.types.Operator):
     def _calculate_baseline_fitness(
             bm: bmesh.types.BMesh,
             grid_size: int,
+            offset: Vector,
             face_ids: Iterable[int]
     ) -> Optional[float]:
         mask = discrete.Grid.empty(width=grid_size, height=grid_size)
-        offset = Vector((0, 0))
         cell_size = 1.0 / grid_size
         out_of_bounds = not continuous.fill_mask(
             bm,

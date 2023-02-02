@@ -28,6 +28,7 @@ import random
 from typing import (List, Sequence, Tuple, Optional)
 
 import bmesh                  # type: ignore
+from mathutils import Vector
 
 from guvp import (constants, continuous, debug, discrete)
 
@@ -147,6 +148,8 @@ class Solution:
         max_width: int = int(
             self._use_available_area * self._collision_mask.width
         ) + int(
+            # Note that we are using the height of utilized area
+            # not its width.
             (1.0 - self._use_available_area) * self._utilized_area[1]
         )
         max_width = max(1, min(self._collision_mask.width, max_width))
@@ -283,12 +286,12 @@ class GridPacker:
         else:
             return self._winner.fitness
 
-    def write(self, bm: bmesh.types.BMesh) -> None:
+    def write(self, bm: bmesh.types.BMesh, udim_offset: Vector) -> None:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
         scaling_factor: float = self._winner.scaling_factor
         for ip in self._winner.islands:
-            ip.write_uvs(bm, scaling_factor)
+            ip.write_uvs(bm, udim_offset, scaling_factor)
 
     def _group_islands(self) -> List[List[continuous.Island]]:
         if len(self._islands) <= 20:
@@ -450,5 +453,16 @@ class IslandPlacement:
                  bounds[1] - (self.offset.y + mask.height))
             )
 
-    def write_uvs(self, bm: bmesh.types.BMesh, scaling_factor: float) -> None:
-        self._island.write_uvs(bm, self.offset, self.rotation, scaling_factor)
+    def write_uvs(
+            self,
+            bm: bmesh.types.BMesh,
+            udim_offset: Vector,
+            scaling_factor: float
+    ) -> None:
+        self._island.write_uvs(
+            bm,
+            udim_offset,
+            self.offset,
+            self.rotation,
+            scaling_factor
+        )

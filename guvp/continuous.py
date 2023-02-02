@@ -80,7 +80,8 @@ class Island:
     def write_uvs(
             self,
             bm: bmesh.types.BMesh,
-            offset: discrete.CellCoord,
+            udim_offset: Vector,
+            grid_offset: discrete.CellCoord,
             rotation: constants.Rotation,
             scaling_factor: float
     ) -> None:
@@ -104,7 +105,7 @@ class Island:
             )
         del w, h
         uv_ident = bm.loops.layers.uv.active
-        offset_vec: Vector = Vector(offset) * self.cell_size
+        offset_vec: Vector = Vector(grid_offset) * self.cell_size
         for face_id in self.face_ids:
             for face_loop in bm.faces[face_id].loops:
                 assert face_loop.index in self.uvs[face_id]
@@ -116,7 +117,7 @@ class Island:
                 uv = uv.to_2d()
                 uv += offset_vec
                 uv *= scaling_factor
-                face_loop[uv_ident].uv = uv
+                face_loop[uv_ident].uv = uv + udim_offset
 
     @staticmethod
     def _calculate_uvs_and_size(
