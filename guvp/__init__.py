@@ -34,6 +34,7 @@ if "bpy" in locals():
 else:
     # stdlib
     from functools import reduce
+    import math
     import random
     import time
     from typing import (Iterable, List, Optional, Set)
@@ -73,14 +74,22 @@ class GridUVPackOperator(bpy.types.Operator):
     bl_label = "Grid UV Pack"
     bl_options = {'UNDO'}
 
+    pack_to: bpy.props.EnumProperty(    # type: ignore
+        name="Pack to",
+        default="closest",              # noqa: F821
+        items=(
+            ('closest', "Closest UDIM", "", 'NONE', 1),  # noqa: F821
+            ('active', "Active UDIM", "", 'NONE', 2),    # noqa: F821
+        )
+    )
     grid_size: bpy.props.EnumProperty(  # type: ignore
         name="Grid Size",               # noqa: F722
         default="128",
         items=(
-            ("64", "64", "", 'NONE', 64),     # noqa: F722,F821
-            ("128", "128", "", 'NONE', 128),  # noqa: F722,F821
-            ("256", "256", "", 'NONE', 256),  # noqa: F722,F821
-            ("512", "512", "", 'NONE', 512)   # noqa: F722,F821
+            ('64', "64", "", 'NONE', 64),     # noqa: F821
+            ('128', "128", "", 'NONE', 128),  # noqa: F821
+            ('256', "256", "", 'NONE', 256),  # noqa: F821
+            ('512', "512", "", 'NONE', 512)   # noqa: F821
         ),
         options={'SKIP_SAVE'}                 # noqa: F821
     )
@@ -134,6 +143,7 @@ class GridUVPackOperator(bpy.types.Operator):
         self.end_time_ns: Optional[int]
         self.bm: bmesh.types.BMesh
         self.island_face_ids: List[set[int]]
+        self.udim_offset: Vector
         self.baseline_fitness: float
         self.packer: packing.GridPacker
         self._timer: bpy.types.Timer
@@ -163,12 +173,24 @@ class GridUVPackOperator(bpy.types.Operator):
         self.bm.faces.ensure_lookup_table()
 
         self.island_face_ids = self._island_face_ids(self.bm)
+        flattened_face_ids: Set[int] = reduce(
+            lambda a, b: set(a) | b,
+            self.island_face_ids, set()
+        )
+
+        # Calculate UDIM offset
+        self._calculate_udim_offset(context, flattened_face_ids)
+        debug.print_(
+            "Packing to {} UDIM tile.  Offset is {!r}",
+            self.pack_to,
+            self.udim_offset
+        )
 
         # Calculate fitness of the input UVs.
         baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
             self.bm,
             int(self.grid_size),
-            reduce(lambda a, b: set(a) | b, self.island_face_ids, set())
+            flattened_face_ids
         )
         if baseline_fitness is None:
             self.report(
@@ -299,6 +321,20 @@ class GridUVPackOperator(bpy.types.Operator):
         wm: bpy.types.WindowManager = context.window_manager
         return wm.invoke_props_dialog(self)
 
+    def _calculate_udim_offset(
+            self,
+            context: bpy.types.Context,
+            face_ids: Iterable[int]
+    ) -> None:
+        if self.pack_to == 'active':
+            self.udim_offset = self._calculate_udim_offset_active(context)
+        elif self.pack_to == 'closest':
+            center: Vector = self._calculate_center(
+                self.bm,
+                face_ids
+            )
+            self.udim_offset = self._calculate_udim_offset_closest(center)
+
     @staticmethod
     def _calculate_baseline_fitness(
             bm: bmesh.types.BMesh,
@@ -319,6 +355,26 @@ class GridUVPackOperator(bpy.types.Operator):
         return None if out_of_bounds else float(ones) / (grid_size * grid_size)
 
     @staticmethod
+    def _calculate_center(
+            bm: bmesh.types.BMesh,
+            face_ids: Iterable[int]
+    ) -> Vector:
+        uv_ident = bm.loops.layers.uv.active
+
+        u_min: float = math.inf
+        u_max: float = -math.inf
+        v_min: float = math.inf
+        v_max: float = -math.inf
+        for face_id in face_ids:
+            for loop in bm.faces[face_id].loops:
+                (u, v) = loop[uv_ident].uv
+                u_min = min(u_min, u)
+                u_max = max(u_max, u)
+                v_min = min(v_min, v)
+                v_max = max(v_max, v)
+        return Vector(((u_min + u_max) * 0.5, (v_min + v_max) * 0.5))
+
+    @staticmethod
     def _island_face_ids(bm: bpy.types.BMesh) -> List[set[int]]:
         """Calculate sets of faces that form a UV island."""
         uv_ident = bm.loops.layers.uv.active
@@ -337,6 +393,31 @@ class GridUVPackOperator(bpy.types.Operator):
             if island_selected:
                 result.append(set([f.index for f in faces]))
         return result
+
+    @staticmethod
+    def _calculate_udim_offset_active(context: bpy.types.Context) -> Vector:
+        # Active UDIM image tile or, if no image is available, the UDIM grid
+        # tile where the 2D cursor is located.
+        tile_x: int
+        tile_y: int
+        if context.space_data.image is not None:
+            img: bpy.types.Image = context.space_data.image
+            tile_x = img.tiles.active.number % 10
+            if tile_x == 0:
+                tile_x = 10
+            tile_x -= 1
+            tile_y = img.tiles.active.number // 10
+            tile_y -= 100
+        else:
+            tile_x = math.floor(context.space_data.cursor_location[0])
+            tile_y = math.floor(context.space_data.cursor_location[1])
+        return Vector((tile_x, tile_y))
+
+    @staticmethod
+    def _calculate_udim_offset_closest(center: Vector) -> Vector:
+        tile_x: int = math.floor(center.x)
+        tile_y: int = math.floor(center.y)
+        return Vector((tile_x, tile_y))
 
 
 def menu_draw(self, _context):
