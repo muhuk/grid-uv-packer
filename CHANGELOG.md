@@ -29,6 +29,17 @@
   and
   [3863a48](https://github.com/muhuk/grid-uv-packer/commit/4ce97666e49fcaabe248a31e00beb54073863a48).
 
+### Removed
+
+- Removed baseline fitness calculation.  This was not something users were
+  seeing but before UDIM support, if all islands were not in UV unit square
+  the operator gave an error.  Otherwise a baseline fitness was being
+  calculated and the UVs were only updated if the grid packer's result was
+  better than the original UV map.  When the UDIM support added calculating
+  the baseline fitness became difficult so it was removed.  Now the UVs are
+  updated provided that all islands are placed on the grid (a solution is
+  found).  If the result is not good, you can undo.
+
 ## [0.3] - 2022-12-29
 
 ### Added

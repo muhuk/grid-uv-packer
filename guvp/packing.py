@@ -286,12 +286,18 @@ class GridPacker:
         else:
             return self._winner.fitness
 
+    @property
+    def scaling_factor(self) -> float:
+        if self._winner is None:
+            return 1.0
+        else:
+            return self._winner.scaling_factor
+
     def write(self, bm: bmesh.types.BMesh, udim_offset: Vector) -> None:
         if self._winner is None:
             raise RuntimeError("write is called before run.")
-        scaling_factor: float = self._winner.scaling_factor
         for ip in self._winner.islands:
-            ip.write_uvs(bm, udim_offset, scaling_factor)
+            ip.write_uvs(bm, udim_offset, self.scaling_factor)
 
     def _group_islands(self) -> List[List[continuous.Island]]:
         if len(self._islands) <= 20:

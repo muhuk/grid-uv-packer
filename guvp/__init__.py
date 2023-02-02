@@ -43,7 +43,6 @@ else:
     from bpy_extras.bmesh_utils import bmesh_linked_uv_islands  # type: ignore
     import bmesh                                                # type: ignore
     from mathutils import Vector                                # type: ignore
-    import numpy as np                                          # type: ignore
     # addon
     from guvp import (                                          # noqa: F401
         constants,
@@ -144,7 +143,6 @@ class GridUVPackOperator(bpy.types.Operator):
         self.bm: bmesh.types.BMesh
         self.island_face_ids: List[set[int]]
         self.udim_offset: Vector
-        self.baseline_fitness: float
         self.packer: packing.GridPacker
         self._timer: bpy.types.Timer
 
@@ -173,38 +171,23 @@ class GridUVPackOperator(bpy.types.Operator):
         self.bm.faces.ensure_lookup_table()
 
         self.island_face_ids = self._island_face_ids(self.bm)
-        flattened_face_ids: Set[int] = reduce(
-            lambda a, b: set(a) | b,
-            self.island_face_ids, set()
-        )
 
         # Calculate UDIM offset
-        self._calculate_udim_offset(context, flattened_face_ids)
+        self._calculate_udim_offset(
+            context,
+            reduce(lambda a, b: set(a) | b, self.island_face_ids, set())
+        )
         debug.print_(
             "Packing to {} UDIM tile.  Offset is {!r}",
             self.pack_to,
             self.udim_offset
         )
 
-        # Calculate fitness of the input UVs.
-        baseline_fitness: Optional[float] = self._calculate_baseline_fitness(
-            self.bm,
-            int(self.grid_size),
-            self.udim_offset,
-            flattened_face_ids
-        )
-        if baseline_fitness is None:
-            self.report(
-                {'ERROR'}, "Island out of bounds in active UV map."
-            )
-            return {'CANCELLED'}
+        debug.print_("Seed being used is: {}", self.random_seed)
+        if self.max_iterations == 1:
+            return self.execute_single(context)
         else:
-            self.baseline_fitness = baseline_fitness
-            debug.print_("Seed being used is: {}", self.random_seed)
-            if self.max_iterations == 1:
-                return self.execute_single(context)
-            else:
-                return self.execute_parallel(context)
+            return self.execute_parallel(context)
 
     def execute_single(self, context: bpy.types.Context) -> Set[str]:
         debug.print_("Running a single iteration.")
@@ -294,14 +277,11 @@ class GridUVPackOperator(bpy.types.Operator):
 
     def finish(self, context: bpy.types.Context) -> Set[str]:
         debug.print_(
-            "Baseline fitness is {:.2f}%",
-            self.baseline_fitness * 100
+            "Fitness is {:.2f}%, scaling factor is {:.3f}",
+            self.packer.fitness * 100,
+            self.packer.scaling_factor
         )
-        debug.print_(
-            "Grid packer fitness is {:.2f}%",
-            self.packer.fitness * 100
-        )
-        if self.packer.fitness > self.baseline_fitness:
+        if self.packer.fitness > 0.00001:
             self.packer.write(self.bm, self.udim_offset)
             bmesh.update_edit_mesh(
                 mesh=context.active_object.data,
@@ -335,25 +315,6 @@ class GridUVPackOperator(bpy.types.Operator):
                 face_ids
             )
             self.udim_offset = self._calculate_udim_offset_closest(center)
-
-    @staticmethod
-    def _calculate_baseline_fitness(
-            bm: bmesh.types.BMesh,
-            grid_size: int,
-            offset: Vector,
-            face_ids: Iterable[int]
-    ) -> Optional[float]:
-        mask = discrete.Grid.empty(width=grid_size, height=grid_size)
-        cell_size = 1.0 / grid_size
-        out_of_bounds = not continuous.fill_mask(
-            bm,
-            set(face_ids),
-            offset,
-            cell_size,
-            mask
-        )
-        ones = np.count_nonzero(mask.cells)
-        return None if out_of_bounds else float(ones) / (grid_size * grid_size)
 
     @staticmethod
     def _calculate_center(
