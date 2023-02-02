@@ -4,6 +4,8 @@
 
 ### Added
 
+- UDIM support is added.  `Pact to` options `Active UDIM` and `Closest UDIM`
+  should work same as `py.ops.uv.pack_islands()`.
 - You can interrupt calculation via `ESC` key.  Note that this does not cancel
   the operation.  If a solution with better coverage is already found, UVs
   will be updated.  (You can undo the operator)
