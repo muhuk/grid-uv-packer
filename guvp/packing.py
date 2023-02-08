@@ -78,8 +78,7 @@ class Solution:
         # We need to reset search cell here since
         # pack may be called several times.
         self._search_start = discrete.CellCoord.zero()
-        max_island_retries: int = int(len(islands_remaining) * 1.5)
-        island_retries_left: int = max_island_retries
+        island_retries_left: int = int(len(islands_remaining) * 1.5)
         while len(islands_remaining) > 0 and island_retries_left > 0:
             island_retries_left -= 1
             placement_retries_left: int = constants.MAX_PLACEMENT_RETRIES
@@ -239,11 +238,7 @@ class Solution:
                 ratio = 1.0 / ratio
         else:
             ratio = max_d
-        # 1 - (1/X - 1/NEAR) / (1/FAR - 1/NEAR)
-        # NEAR = 1
-        # FAR = max_d
-        self._use_available_area = \
-            1.0 - ((1.0 / ratio) - 1.0) / ((1.0 / max_d) - 1.0)
+        self._use_available_area = ((ratio / max_d) ** 1) * 0.95 + 0.05
 
     def _write_island_to_mask(self, ip: IslandPlacement) -> None:
         self._mask.combine(ip.get_mask(
