@@ -214,6 +214,8 @@ class GridUVPackOperator(bpy.types.Operator):
         if self.max_runtime > 0:
             self.end_time_ns = self.start_time_ns + \
                 self.max_runtime * 1_000_000_000
+        else:
+            self.end_time_ns = None
 
         wm: bpy.types.WindowManager = context.window_manager
         wm.progress_begin(0, 10000)
