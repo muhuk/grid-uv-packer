@@ -126,15 +126,15 @@ class Grid:
         return np.count_nonzero(self.cells)
 
     def rotate(self, rotation: constants.Rotation) -> Grid:
-        # numpy rotation is CCW, we are using CW rotation.
+        # numpy rotation is CW, we are also using CW rotation.
         if rotation is constants.Rotation.NONE:
             return Grid(self.cells)
         elif rotation is constants.Rotation.DEGREES_90:
-            return Grid(np.rot90(self.cells, 3))
+            return Grid(np.rot90(self.cells, 1))
         elif rotation is constants.Rotation.DEGREES_180:
             return Grid(np.rot90(self.cells, 2))
         elif rotation is constants.Rotation.DEGREES_270:
-            return Grid(np.rot90(self.cells, 1))
+            return Grid(np.rot90(self.cells, 3))
         else:
             raise RuntimeError(
                 "Unrecognized rotation {!r}".format(rotation)

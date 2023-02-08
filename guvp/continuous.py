@@ -85,6 +85,7 @@ class Island:
             rotation: constants.Rotation,
             scaling_factor: float
     ) -> None:
+        # mathutils rotation is CCW, we are using CW notation.
         rotation_euler: Euler = Euler(
             (0.0, 0.0, math.radians(-rotation.value))
         )
