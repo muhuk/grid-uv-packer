@@ -23,20 +23,8 @@ ADDON_NAME = __package__
 
 DEBUG_MODE_DEFAULT: bool = False
 
-# Grow chance if utilized area is too big.
-GROW_AREA_CHANCE = 0.5
-
 # Grow if utilized area is larger than this.
 GROW_AREA_RATIO = 0.85
-
-# Base grow chance without modifiers
-GROW_BASE_CHANCE = 0.15
-
-# Grow change if the utilized area is closer to a rectangle.
-GROW_ASPECT_RATIO_CHANCE = -0.25
-
-# What is the threshold to consider a rectangle-like fill.
-GROW_ASPECT_RATIO_LIMIT = 0.667
 
 MAX_GROW_COUNT = 2
 

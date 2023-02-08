@@ -78,7 +78,8 @@ class Solution:
         # We need to reset search cell here since
         # pack may be called several times.
         self._search_start = discrete.CellCoord.zero()
-        island_retries_left: int = len(islands_remaining)
+        max_island_retries: int = int(len(islands_remaining) * 1.5)
+        island_retries_left: int = max_island_retries
         while len(islands_remaining) > 0 and island_retries_left > 0:
             island_retries_left -= 1
             placement_retries_left: int = constants.MAX_PLACEMENT_RETRIES
@@ -113,7 +114,7 @@ class Solution:
                     )
             if island_placement is None:
                 islands_remaining.append(island)
-                if self._rng.random() <= self._calculate_grow_chance():
+                if self._should_grow():
                     self._grow()
             else:
                 # Note that `island` was removed from `islands_remaining`.
@@ -172,24 +173,6 @@ class Solution:
         ratio: float = float(x) / float(y) if x != 0 and y != 0 else 1.0
         return ratio if ratio <= 1.0 else 1 / ratio
 
-    def _calculate_grow_chance(self) -> float:
-        grow_chance: float = constants.GROW_BASE_CHANCE
-        utilized_x: float = float(self._utilized_area[0])
-        utilized_y: float = float(self._utilized_area[1])
-        # Grow if utilized area gets too large compared to current mask size.
-        w: int = self._collision_mask.width
-        h: int = self._collision_mask.height
-        if utilized_x / w > constants.GROW_AREA_RATIO or \
-           utilized_y / h > constants.GROW_AREA_RATIO:
-            grow_chance += constants.GROW_AREA_CHANCE
-        del w, h
-        # Grow only if utilized area is rectangular.
-        ratio: float = self._aspect_ratio()
-        if ratio <= constants.GROW_ASPECT_RATIO_LIMIT:
-            grow_chance += constants.GROW_ASPECT_RATIO_CHANCE
-        del ratio
-        return max(0.0, min(grow_chance, 1.0))
-
     def _check_collision(self, ip: IslandPlacement) -> CollisionResult:
         island_bounds = ip.get_bounds()
         if island_bounds[0] < 0:
@@ -227,6 +210,15 @@ class Solution:
         self._collision_mask = new_collision_mask
         # No need to update utilized area.
         return None
+
+    def _should_grow(self) -> bool:
+        # Grow if utilized area gets too large compared to current mask size.
+        utilized_x: float = float(self._utilized_area[0])
+        utilized_y: float = float(self._utilized_area[1])
+        w: int = self._collision_mask.width
+        h: int = self._collision_mask.height
+        return (utilized_x / w > constants.GROW_AREA_RATIO) or \
+            (utilized_y / h > constants.GROW_AREA_RATIO)
 
     def _update_utilized_area(self, ip: IslandPlacement) -> None:
         # Update self._utilized_area
