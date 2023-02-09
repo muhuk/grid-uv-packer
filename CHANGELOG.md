@@ -22,6 +22,8 @@
 
 ### Fixed
 
+- Fixed an issue where rotated islands were overlapping with other
+  islands. [6ae83fe](https://github.com/muhuk/grid-uv-packer/commit/f17f337423dbe9ffad4e4641b6be9a5ab6ae83fe)
 - Earlier packing tended to produce results that cover a rectangular area
   (mostly x axis, y axis underutilized) instead of the whole UV square.  This
   is fixed with
