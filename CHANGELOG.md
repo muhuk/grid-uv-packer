@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0] - 2023-02-14
+
 ### Added
 
 - UDIM support is added.  `Pact to` options `Active UDIM` and `Closest UDIM`
@@ -82,7 +84,8 @@
 ### Added
 - Initial proof of concept release.  Not ready for production use.
 
-[unreleased]: https://github.com/muhuk/grid-uv-packer/compare/v0.3...HEAD
+[unreleased]: https://github.com/muhuk/grid-uv-packer/compare/v1.0...HEAD
+[1.0]: https://github.com/muhuk/grid-uv-packer/compare/v0.3...v1.0
 [0.3]: https://github.com/muhuk/grid-uv-packer/compare/v0.2...v0.3
 [0.2]: https://github.com/muhuk/grid-uv-packer/compare/v0.1...v0.2
 [0.1]: https://github.com/muhuk/grid-uv-packer/releases/tag/v0.1
