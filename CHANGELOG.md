@@ -12,6 +12,8 @@
 
 ### Changed
 
+- Moved from `Unwrap` menu to `UV`
+  menu. [b659c64](https://github.com/muhuk/grid-uv-packer/commit/37f5e510f557d3d6eb7c1956eb2515575b659c64)
 - When `Max Iterations` is set to `1` packer is run single threaded.  Note
   that you need a lot more than one iteration to get decent results, this is
   intended for
