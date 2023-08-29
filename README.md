@@ -1,5 +1,9 @@
 # Grid UV Packer
 
+**Deprecation Warning: Blender 3.6.0 has this functionality built-in.  You are advised to uninstall this addon.**
+
+-----
+
 ![grid-uv-packer logo](./img/grid-uv-packer-logo.png)
 
 A pure-Python UV packer that packs irregularly shaped UV islands efficiently.
